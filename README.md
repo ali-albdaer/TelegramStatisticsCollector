@@ -1,5 +1,5 @@
 
-# Telegram Statistic Collector
+# Telegram Statistics Collector
 
 A Python script to collect and analyze statistics from Telegram group messages. The script fetches messages from a specified Telegram group and stores various statistics about the messages and users in JSON files and a SQLite database.
 
