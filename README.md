@@ -14,7 +14,7 @@ A Python script to collect and analyze statistics from Telegram group messages. 
 1. **Clone the repository:**
 
    ```sh
-   git clone https://github.com/yourusername/telegram-message-stats-collector.git
+   git clone https://github.com/ali-albdaer/TelegramStatisticsCollector.git
    cd telegram-message-stats-collector
    ```
 
