@@ -33,6 +33,7 @@ class User:
         self.media_count = 0
         self.word_count = 0
         self.word_counter = Counter()  # Counts all words then chooses the top TOP_WORDS_LIMIT
+        self.phrase_counter = Counter()
         self.letter_count = 0
         self.loud_messages = 0
         self.curses_count = 0
@@ -69,7 +70,10 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         else:
             text = message.text
 
-        words = re.findall(r'\b\w+\b', text.lower() if CASE_INSENSITIVE else text)
+        if CASE_INSENSITIVE:
+            text = text.lower()
+
+        words = re.findall(r'\b\w+\b', text)
 
         # Counting words and letters is done before filtering out common words
         word_count = len(words)
@@ -94,13 +98,30 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
             for element in elements:
                 if isinstance(element, tuple):
                     for alias in element:
+                        if ' ' in alias:
+                            _count = text.count(alias)
+                            if _count > 0:
+                                user.phrase_counter[alias] += _count
+                                global_stats['category_mentions'][category][element[0]] += _count
+
                         if alias in words:
-                            user.category_words[category][alias] += words.count(alias)
-                            global_stats['category_mentions'][category][element[0]] += words.count(alias)
+                            _count = words.count(alias)
+                            if _count > 0:
+                                user.category_words[category][alias] += _count
+                                global_stats['category_mentions'][category][element[0]] += _count
+
                 else:
+                    if ' ' in element:
+                        _count = text.count(element)
+                        if _count > 0:
+                            user.phrase_counter[element] += _count
+                            global_stats['category_mentions'][category][element] += _count
+
                     if element in words:
-                        user.category_words[category][element] += words.count(element)
-                        global_stats['category_mentions'][category][element] += words.count(element)
+                        _count = words.count(element)
+                        if _count > 0:
+                            user.category_words[category][element] += _count
+                            global_stats['category_mentions'][category][element] += _count
 
         for curse in curses:
             if curse in words:
@@ -114,6 +135,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
 
             user.reactions_received[reaction.reaction.emoticon] += 1
             global_stats['top_reactions'][reaction.reaction.emoticon] += 1
+
 
 async def collect_stats():
     await telegram_client.connect()
@@ -197,8 +219,9 @@ def save_user_stats(user_stats: dict):
                 'daily_activity': dict(user.daily_activity.most_common(TOP_ACTIVE_DAYS_LIMIT)),
                 'category_words': {k: dict(v) for k, v in user.category_words.items()},
                 'top_words': user.top_words(TOP_MESSAGE_LIMIT),
-                'reactions_given': dict(user.reactions_given),
-                'reactions_received': dict(user.reactions_received)
+                'reactions_given': dict(user.reactions_given),  # Include reactions given by the user
+                'reactions_received': dict(user.reactions_received),  # Include reactions received by the user
+                'phrases': dict(user.phrase_counter.most_common(TOP_PHRASE_LIMIT))  # Include phrases
             }
             for user_id, user in user_stats.items()
         }
@@ -223,19 +246,21 @@ def save_user_stats(user_stats: dict):
             category_words TEXT,
             top_words TEXT,
             reactions_given TEXT,
-            reactions_received TEXT
+            reactions_received TEXT,
+            phrases TEXT
         )
     ''')
 
     for user_id, user in user_stats.items():
         cursor.execute('''
-            INSERT OR REPLACE INTO user_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO user_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             user.user_id, user.name, user.message_count, user.media_count,
             user.word_count, user.letter_count, user.loud_messages, user.loudness, user.curses_count, user.naughtiness,
             json.dumps(dict(user.daily_activity.most_common(TOP_ACTIVE_DAYS_LIMIT))),
             json.dumps({k: dict(v) for k, v in user.category_words.items()}), json.dumps(user.top_words(TOP_MESSAGE_LIMIT)),
-            json.dumps(dict(user.reactions_given)), json.dumps(dict(user.reactions_received))
+            json.dumps(dict(user.reactions_given)), json.dumps(dict(user.reactions_received)),
+            json.dumps(dict(user.phrase_counter.most_common(TOP_PHRASE_LIMIT)))
         ))
 
     conn.commit()
