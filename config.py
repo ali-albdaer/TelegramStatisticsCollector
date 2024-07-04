@@ -35,4 +35,4 @@ sensitive_alpha_json = 'data/all_words_case_sensitive_alpha.json'
 insensitive_freq_json = 'data/all_words_case_insensitive_freq.json'
 insensitive_alpha_json = 'data/all_words_case_insensitive_alpha.json'
 
-# test
+# test 2
