@@ -9,6 +9,10 @@ from telethon import TelegramClient
 from config import *
 
 
+if not os.path.exists('data'):
+    os.makedirs('data')
+
+
 async def collect_word_stats():
     await telegram_client.connect()
 
