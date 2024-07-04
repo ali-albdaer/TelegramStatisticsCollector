@@ -16,7 +16,8 @@ LOGOUT = False  # Set to True to delete the current session file.
 
 
 # Limits
-TOP_MESSAGE_LIMIT = 20  # Limit for top messages stored per user
+TOP_WORD_LIMIT = 20  # Limit for top messages stored per user
+TOP_PHRASE_LIMIT = 20
 TOP_ACTIVE_DAYS_LIMIT = 10  # Limit for top active days stored per user
 GLOBAL_MESSAGE_LIMIT = 20  # Limit for top global messages
 TOP_REACTION_LIMIT = 10  # Limit for top reactions
