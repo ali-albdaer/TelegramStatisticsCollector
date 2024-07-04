@@ -11,17 +11,17 @@ from config import *
 from lookup import category_sets, ignored_words, curses
 
 
+if CONVERT_UNICODE:
+    from unidecode import unidecode
+
+
 logging.basicConfig(level=logging.INFO)
 
-
-if not os.path.exists('temp'):
-    os.makedirs('temp')
 
 if not os.path.exists('data'):
     os.makedirs('data')
 
 
-session_file = os.path.join('temp', f'{telegram_user}.session')
 telegram_client = TelegramClient(session_file, api_id, api_hash)
 
 
@@ -62,7 +62,13 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         global_stats['media_users'][sender_id] += 1
 
     if message.text:
-        words = re.findall(r'\b\w+\b', message.text.lower() if CASE_INSENSITIVE else message.text)
+        if CONVERT_UNICODE:
+            text = unidecode(message.text)
+
+        else:
+            text = message.text
+
+        words = re.findall(r'\b\w+\b', text.lower() if CASE_INSENSITIVE else text)
 
         # Counting words and letters is done before filtering out common words
         word_count = len(words)
@@ -79,7 +85,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         global_stats['word_count'] += word_count
         global_stats['letter_count'] += letter_count
 
-        if message.text.isupper():
+        if text.isupper():
             user.loud_messages += 1
             global_stats['loud_users'][sender_id] += 1
 
@@ -144,6 +150,11 @@ async def collect_stats():
     save_user_stats(user_stats)
 
     await telegram_client.disconnect()
+
+    if LOGOUT:
+        os.remove(session_file)
+
+    print('[ Program Finished. ]')
 
 def save_global_stats(global_stats: dict):
     json_global_stats = {

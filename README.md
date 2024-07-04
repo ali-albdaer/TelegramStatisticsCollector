@@ -1,13 +1,9 @@
 
 # Telegram Statistics Collector
 
-A Python script to collect and analyze statistics from Telegram group messages. The script fetches messages from a specified Telegram group and stores various statistics about the messages and users in JSON files and a SQLite database.
-
-## Features
-
-- Collects top messages, amount of media, and various user statistics from a Telegram group for each user.
-- Tracks ALL CAPS messages and curses.
-- Configurable options to ignore common words and display a progress bar.
+A Python project to collect and analyze statistics from Telegram group messages. The project consists of two scripts:
+- `collect_data.py`: Fetches messages from a specified Telegram group, lookes for keywords and stores various statistics about the messages and users in JSON files and a SQLite database. Statistics and keywords are configurable.
+- `get_all_words.py`: Fecthes messages from a specified Telegram group and stores them into 4 `.json` files. (case sensitive / insensitive; sorted alphabetically / by frequency)
 
 ## Installation
 
@@ -15,7 +11,6 @@ A Python script to collect and analyze statistics from Telegram group messages. 
 
    ```sh
    git clone https://github.com/ali-albdaer/TelegramStatisticsCollector.git
-   cd telegram-message-stats-collector
    ```
 
 2. **Install the required Python packages:**
@@ -39,6 +34,7 @@ A Python script to collect and analyze statistics from Telegram group messages. 
 
 2. **Optionally configure the following parameters:**
    ```python
+   # config.py
    TOP_MESSAGE_LIMIT = 20
    TOP_ACTIVE_DAYS_LIMIT = 10
    GLOBAL_MESSAGE_LIMIT = 30
@@ -48,6 +44,8 @@ A Python script to collect and analyze statistics from Telegram group messages. 
    IGNORE_COMMON_WORDS = True
    SHOW_PROGRESS_BAR = True
    CASE_INSENSITIVE = True
+   CONVERT_UNICODE = True
+   LOGOUT = False
    ```
 
 3. **Add the words you want to track to the `lookup.py` file:**
@@ -55,9 +53,11 @@ A Python script to collect and analyze statistics from Telegram group messages. 
    ```python
    # lookup.py
    category_sets = {
-       # Example category sets
-       'greetings': {'hello', 'hi', 'hey'},
-       'farewells': {'bye', 'goodbye', 'see you'}
+      'greetings': {'hello', 'hi', 'hey'},
+      'farewells': {'bye', 'goodbye'}
+      'animals': {'dog', 'cat', 'elephant', 'giraffe'},
+      'colors': {'red', 'blue', 'green', 'yellow', 'orange', 'purple'},
+      'numbers': set(map(str, range(1001))), 
    }
 
    ignored_words = {"the", "in", "a", "it", "is", "and", "to", "of", "i", "you"}
@@ -67,19 +67,31 @@ A Python script to collect and analyze statistics from Telegram group messages. 
 
 ## Usage
 
-1. **Run the script:**
+1. **Run the script you want:**
 
    ```sh
-   python process.py
+   python collect_data.py
    ```
 
-   The script will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. (Type the code you receive from telegram in the terminal)
+   OR
 
-2. **View the statistics:**
+   ```sh
+   python get_all_words.py
+   ```
 
-   - The global statistics will be saved in `data/global_stats.json`.
-   - The user statistics will be saved in `data/user_stats.json` and `data/user_stats.db`.
+   Either script will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. Type the code you receive from telegram in the terminal.
 
+2. **View the data:**
+   `collect_data.py`: the statistics will be saved in:
+      - `data/global_stats.json`,
+      - `data/user_stats.json`,
+      - and `data/user_stats.db`.
+
+   `get_all_words.py`: the words will be saved in:
+      - `'data/all_words_case_sensitive_freq.json'`, 
+      - `'data/all_words_case_sensitive_alpha.json'`,
+      - `'data/all_words_case_insensitive_freq.json'`,
+      - and `'data/all_words_case_insensitive_alpha.json'`.
 
 ## Disclaimer
 This project was created for fun and educational purposes. Please use it responsibly and ethically. I do not support any malicious use of this script, including but not limited to:
