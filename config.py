@@ -11,6 +11,7 @@ IGNORE_COMMON_WORDS = False
 SHOW_PROGRESS_BAR = True
 CASE_INSENSITIVE = True
 CONVERT_UNICODE = True  # Set to False to keep unicode characters in the output. (not recommended)
+COUNT_REACTIONS = True
 LOGOUT = False  # Set to True to delete the current session file.
 
 
@@ -18,8 +19,9 @@ LOGOUT = False  # Set to True to delete the current session file.
 TOP_MESSAGE_LIMIT = 20  # Limit for top messages stored per user
 TOP_ACTIVE_DAYS_LIMIT = 10  # Limit for top active days stored per user
 GLOBAL_MESSAGE_LIMIT = 20  # Limit for top global messages
+TOP_REACTION_LIMIT = 10  # Limit for top reactions
 GLOBAL_RANKING_LIMIT = 20  # Limit for global ranking data (e.g., loud_users, cursing_users)
-CATEGORY_MENTION_LIMIT = 10**3  # Limit for category mentions (lookup.py)
+CATEGORY_MENTION_LIMIT = 100  # Limit for category mentions (lookup.py)
 
 
 # File Paths
