@@ -8,7 +8,8 @@ from collections import Counter, defaultdict
 from telethon import TelegramClient
 
 from config import *
-from lookup import category_sets, ignored_words, curses
+from phrases import category_sets, ignored_words
+from explicit import curses
 
 
 if CONVERT_UNICODE:
@@ -221,7 +222,7 @@ def save_user_stats(user_stats: dict):
                 'naughtiness': user.naughtiness,
                 'daily_activity': dict(user.daily_activity.most_common(TOP_ACTIVE_DAYS_LIMIT)),
                 'category_words': {k: dict(v) for k, v in user.category_words.items()},
-                'top_words': user.top_words(TOP_WORD_LIMIT),
+                'top_words': user.top_words(TOP_PHRASE_LIMIT),
                 'reactions_given': dict(user.reactions_given),  # Include reactions given by the user
                 'reactions_received': dict(user.reactions_received),  # Include reactions received by the user
             }
@@ -259,7 +260,7 @@ def save_user_stats(user_stats: dict):
             user.user_id, user.name, user.message_count, user.media_count,
             user.word_count, user.letter_count, user.loud_messages, user.loudness, user.curses_count, user.naughtiness,
             json.dumps(dict(user.daily_activity.most_common(TOP_ACTIVE_DAYS_LIMIT))),
-            json.dumps({k: dict(v) for k, v in user.category_words.items()}), json.dumps(user.top_words(TOP_WORD_LIMIT)),
+            json.dumps({k: dict(v) for k, v in user.category_words.items()}), json.dumps(user.top_words(TOP_PHRASE_LIMIT)),
             json.dumps(dict(user.reactions_given)), json.dumps(dict(user.reactions_received)),
         ))
 

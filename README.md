@@ -21,7 +21,7 @@ A Python project to collect and analyze statistics from Telegram group messages.
 
 ## Configuration
 
-1. **Adjust the `config.py` file and provide the following data:**
+1. **Create a `config.py` file in the root directory and provide the following data (see `examples/config_example.py`):**
 
    ```python
    # config.py
@@ -34,8 +34,8 @@ A Python project to collect and analyze statistics from Telegram group messages.
 
 2. **Optionally configure the following parameters:**
    ```python
-   # config.py
-   TOP_MESSAGE_LIMIT = 20
+   # config.py (in root!)
+   TOP_PHRASE_LIMIT = 20
    TOP_ACTIVE_DAYS_LIMIT = 10
    GLOBAL_MESSAGE_LIMIT = 30
    GLOBAL_RANKING_LIMIT = 10
@@ -48,10 +48,10 @@ A Python project to collect and analyze statistics from Telegram group messages.
    LOGOUT = False
    ```
 
-3. **Add the words you want to track to the `lookup.py` file:**
+3. **Create a `phrases.py` file in the root directory and add the words you want to track (see `examples/phrases.py`):**
 
    ```python
-   # lookup.py
+   # phrase.py (in root!)
    category_sets = {
       'greetings': {'hello', 'hi', 'hey'},
       'farewells': {'bye', 'goodbye'}
@@ -61,10 +61,14 @@ A Python project to collect and analyze statistics from Telegram group messages.
    }
 
    ignored_words = {"the", "in", "a", "it", "is", "and", "to", "of", "i", "you"}
-
-   curses = {"slubberdagullion", "gobemouche", "fopdoodle"}
    ```
 
+4. **Flag certain words as curse words or implement your custom logic like fuzzy search (see `examples/explicit.py`):**
+   ```python
+   # explicit.py (in root!)
+   curses = {"slubberdagullion", "gobemouche", "fopdoodle", "tatterdemalion", "scallywag"}
+   ```
+   
 ## Usage
 
 1. **Run the script you want:**
@@ -79,7 +83,7 @@ A Python project to collect and analyze statistics from Telegram group messages.
    python get_all_words.py
    ```
 
-   Either script will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. Type the code you receive from telegram in the terminal.
+   Either script will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. Simply type the code you receive from telegram in the terminal.
 
 2. **View the data:**
    `collect_data.py`: the statistics will be saved in:
