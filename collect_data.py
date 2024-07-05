@@ -7,7 +7,8 @@ import sqlite3
 from collections import Counter, defaultdict
 from telethon import TelegramClient
 
-from config import *
+# Create the following 3 files in the same directory as this script, see the examples directory for reference.
+from config import * 
 from phrases import category_sets, ignored_words
 from explicit import curses
 
@@ -33,20 +34,20 @@ class User:
         self.message_count = 0
         self.media_count = 0
         self.word_count = 0
-        self.word_counter = Counter()  # Counts all words then chooses the top TOP_WORDS_LIMIT
+        self.word_counter = Counter()  # All words used by the user.
         self.letter_count = 0
         self.loud_messages = 0
-        self.curses_count = 0
-        self.daily_activity = Counter()
-        self.category_words = defaultdict(Counter)
+        self.curses_count = 0  # Number of curse words used by the user. See examples/curses_example.py
+        self.daily_activity = Counter()  # The number of messages sent per day.
+        self.category_words = defaultdict(Counter)  # Keywords and phrases. See examples/phrases_example.py
         self.reactions_given = Counter()
         self.reactions_received = Counter()
 
-    def calculate_ratios(self):
+    def calculate_ratios(self):  # The purpose of these ratios is still unclear.
         self.loudness = self.loud_messages / self.message_count if self.message_count else 0
         self.naughtiness = self.curses_count / self.message_count if self.message_count else 0
 
-    def top_words(self, n):
+    def top_words(self, n):  # A dictionary of the top n words used by the user. See examples/config_example.py
         return dict(self.word_counter.most_common(n))
 
 def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_sets: dict):
@@ -129,10 +130,16 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
                 user.curses_count += words.count(curse)
                 global_stats['cursing_users'][sender_id] += words.count(curse)
 
-    if COUNT_REACTIONS and hasattr(message, 'reactions') and message.reactions:
+    if COUNT_REACTIONS and hasattr(message, 'reactions') and message.reactions and message.reactions.recent_reactions:
         for reaction in message.reactions.recent_reactions:
             if reaction.peer_id:
-                user_stats[reaction.peer_id.user_id].reactions_given[reaction.reaction.emoticon] += 1
+                user = user_stats.get(reaction.peer_id.user_id, None)
+
+                if not user:
+                    user = User(reaction.peer_id.user_id)
+                    user_stats[reaction.peer_id.user_id] = user
+
+                user.reactions_given[reaction.reaction.emoticon] += 1
 
             user.reactions_received[reaction.reaction.emoticon] += 1
             global_stats['top_reactions'][reaction.reaction.emoticon] += 1
@@ -147,7 +154,7 @@ async def collect_stats():
 
     group_entity = await telegram_client.get_entity(telegram_group_id)
 
-    user_stats = defaultdict(User)
+    user_stats = {}
     global_stats = {
         'message_count': 0,
         'word_count': 0,

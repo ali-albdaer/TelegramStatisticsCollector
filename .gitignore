@@ -1,8 +1,8 @@
 *.pyc
+*.session
 __pycache__
 data
 temp
-.session
 config.py
 phrases.py
 explicit.py

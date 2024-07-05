@@ -23,14 +23,14 @@ GLOBAL_RANKING_LIMIT = 20  # Limit for global ranking data (e.g., loud_users, cu
 CATEGORY_MENTION_LIMIT = 100  # Limit for category mentions (lookup.py)
 
 
-# File Paths
+# File paths for collect_data.py
 session_file = f'data/{telegram_user}.session'
 global_stats_json = 'data/global_stats.json'
 user_stats_json = 'data/user_stats.json'
 user_stats_db = 'data/users.db'
 
 
-# File paths for words.py
+# File paths for get_all_words.py
 sensitive_freq_json = 'data/all_words_case_sensitive_freq.json'
 sensitive_alpha_json = 'data/all_words_case_sensitive_alpha.json'
 insensitive_freq_json = 'data/all_words_case_insensitive_freq.json'
