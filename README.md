@@ -48,7 +48,7 @@ A Python project to collect and analyze statistics from Telegram group messages.
    LOGOUT = False
    ```
 
-3. **Create a `phrases.py` file in the root directory and add the words you want to track (see `examples/phrases.py`):**
+3. **Create a `phrases.py` file in the root directory and add the words you want to track (see `examples/phrases_example.py`):**
 
    ```python
    # phrase.py (in root!)
@@ -63,7 +63,7 @@ A Python project to collect and analyze statistics from Telegram group messages.
    ignored_words = {"the", "in", "a", "it", "is", "and", "to", "of", "i", "you"}
    ```
 
-4. **Flag certain words as curse words or implement your custom logic like fuzzy search (see `examples/explicit.py`):**
+4. **Flag certain words as curse words or implement your custom logic like fuzzy search (see `examples/explicit_example.py`):**
    ```python
    # explicit.py (in root!)
    curses = {"slubberdagullion", "gobemouche", "fopdoodle", "tatterdemalion", "scallywag"}
