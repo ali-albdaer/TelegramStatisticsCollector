@@ -1,5 +1,6 @@
 *.pyc
 *.session
+*.session-journal
 __pycache__
 data
 temp
