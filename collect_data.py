@@ -83,6 +83,10 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         else:
             text = message.text
 
+        if text.isupper() and len(text) > 1:
+            user.loud_messages += 1
+            global_stats['loud_users'][sender_id] += 1
+
         if CASE_INSENSITIVE:
             text = text.lower()
 
@@ -100,10 +104,6 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         global_stats['top_words'].update(words)
         global_stats['word_count'] += word_count
         global_stats['letter_count'] += letter_count
-
-        if text.isupper():
-            user.loud_messages += 1
-            global_stats['loud_users'][sender_id] += 1
 
         for category, elements in category_sets.items():
             for element in elements:
