@@ -55,16 +55,16 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
     user = user_stats[sender_id]
     user.message_count += 1
 
-    # There are probably better ways to get the user's name.
     if not user.name:
-        if message.sender is None:
-            user.name = 'Unknown User'
+        if message.sender:
+            if message.sender.first_name:
+                user.name = message.sender.first_name + (' ' + message.sender.last_name if message.sender.last_name else '')
 
-        elif message.sender.first_name:
-            user.name = message.sender.first_name + (' ' + message.sender.last_name if message.sender.last_name else '')
+            elif message.sender.username:
+                user.name = message.sender.username
 
-        elif message.sender.username:
-            user.name = message.sender.username
+            else:  # Could be unnecessary but just in case.
+                user.name = 'Unknown User'
 
         else:
             user.name = 'Unknown User'
