@@ -1,7 +1,7 @@
 
 # Telegram Statistics Collector
 
-A set of Python scripts that are used to collect and analyze statistics from Telegram group messages. The project consists of two scripts:
+A set of Python scripts that collect and analyze statistics from Telegram group messages. The project consists of two scripts:
 
 - `collect_data.py`: Fetches messages from a specified Telegram group, lookes for keywords and stores various statistics about the messages and their senders in JSON files and a SQLite database. Statistics and keywords are configurable.
 
