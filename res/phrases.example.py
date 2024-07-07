@@ -1,4 +1,6 @@
 """
+Change the name of this file to `phrases.py` or create a new file named `phrases.py` in this directory.
+
 This file contains all keywords (or phrases) that should be collected and analyzed. (except curse words which are stored in in `explicit.py`)
 By default, everything is treated as case-insensitive. You may change the flag `CASE_INSENSITIVE` in `config.py`.
 
