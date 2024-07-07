@@ -6,7 +6,7 @@ from collections import Counter
 from unidecode import unidecode
 
 from telethon import TelegramClient
-from config import *
+from res.config import *
 
 
 if not os.path.exists('data'):

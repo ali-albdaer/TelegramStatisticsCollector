@@ -7,10 +7,10 @@ import sqlite3
 from collections import Counter, defaultdict
 from telethon import TelegramClient
 
-# Create the following 3 files in the same directory as this script, see the examples directory for reference.
-from config import * 
-from phrases import category_sets, ignored_words
-from explicit import curses
+# Create the following 3 files in the res directory or rename the examples in res.
+from res.config import * 
+from res.phrases import category_sets, ignored_words
+from res.explicit import curses
 
 
 if CONVERT_UNICODE:

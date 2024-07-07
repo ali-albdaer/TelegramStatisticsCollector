@@ -1,3 +1,15 @@
+"""
+Configuration file for the Telegram Statistics Collector.
+
+Create a `config.py` file in this directory or change the name of this file to `config.py` and fill in the required fields. 
+
+- The first set of variables are for the Telegram API configuration, which are required for the script to work. 
+- The second set contains flags that can be toggled to change the behavior of the script. 
+- The third set contains limits for the number of items stored in the database and json files.
+- The last set contains file paths for the data files used by the script.
+"""
+
+
 # Telegram Configuration
 telegram_user = 'example_username'
 telegram_phone = '+1234567890'
