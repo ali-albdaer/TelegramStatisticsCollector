@@ -1,9 +1,11 @@
 
 # Telegram Statistics Collector
 
-A Python project to collect and analyze statistics from Telegram group messages. The project consists of two scripts:
-- `collect_data.py`: Fetches messages from a specified Telegram group, lookes for keywords and stores various statistics about the messages and users in JSON files and a SQLite database. Statistics and keywords are configurable.
-- `get_all_words.py`: Fecthes messages from a specified Telegram group and stores them into 4 `.json` files. (case sensitive / insensitive; sorted alphabetically / by frequency)
+A set of Python scripts that are used to collect and analyze statistics from Telegram group messages. The project consists of two scripts:
+
+- `collect_data.py`: Fetches messages from a specified Telegram group, lookes for keywords and stores various statistics about the messages and their senders in JSON files and a SQLite database. Statistics and keywords are configurable.
+
+- `get_all_words.py`: Fecthes messages from a specified Telegram group and stores all words found into 4 `.json` files. (case sensitive / insensitive; sorted alphabetically / by frequency)
 
 ## Installation
 
@@ -21,10 +23,10 @@ A Python project to collect and analyze statistics from Telegram group messages.
 
 ## Configuration
 
-1. **Create a `config.py` file in the root directory and provide the following data (see `examples/config_example.py`):**
+1. **Create a `config.py` file in the `res` directory and provide the following data (see `res/config.example.py`):**
 
    ```python
-   # config.py
+   # res/config.py
    telegram_user = 'your_telegram_user'
    api_id = 'your_api_id'
    api_hash = 'your_api_hash'
@@ -34,7 +36,7 @@ A Python project to collect and analyze statistics from Telegram group messages.
 
 2. **Optionally configure the following parameters:**
    ```python
-   # config.py (in root!)
+   # res/config.py
    TOP_PHRASE_LIMIT = 20
    TOP_ACTIVE_DAYS_LIMIT = 10
    GLOBAL_MESSAGE_LIMIT = 30
@@ -48,10 +50,10 @@ A Python project to collect and analyze statistics from Telegram group messages.
    LOGOUT = False
    ```
 
-3. **Create a `phrases.py` file in the root directory and add the words you want to track (see `examples/phrases_example.py`):**
+3. **Create a `phrases.py` file in the `res` directory and add the words you want to track (see `res/phrases.example.py`):**
 
    ```python
-   # phrase.py (in root!)
+   # res/phrase.py
    category_sets = {
       'greetings': {'hello', 'hi', 'hey'},
       'farewells': {'bye', 'goodbye'}
@@ -63,9 +65,9 @@ A Python project to collect and analyze statistics from Telegram group messages.
    ignored_words = {"the", "in", "a", "it", "is", "and", "to", "of", "i", "you"}
    ```
 
-4. **Flag certain words as curse words or implement your custom logic like fuzzy search (see `examples/explicit_example.py`):**
+4. **Flag certain words as curse words or implement your custom logic like fuzzy search (see `res/explicit.example.py`):**
    ```python
-   # explicit.py (in root!)
+   # res/explicit.py
    curses = {"slubberdagullion", "gobemouche", "fopdoodle", "tatterdemalion", "scallywag"}
    ```
    
@@ -83,7 +85,7 @@ A Python project to collect and analyze statistics from Telegram group messages.
    python get_all_words.py
    ```
 
-   Either script will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. Simply type the code you receive from telegram in the terminal.
+   Either script will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. Simply type the code you receive from Telegram in the terminal.
 
 2. **View the data:**
    `collect_data.py`: the statistics will be saved in:
