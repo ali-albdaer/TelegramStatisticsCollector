@@ -17,22 +17,26 @@ telegram_group_id = -1234567890  # Example Telegram group ID, can be obtained us
 api_id = '12345678'  # Example Telegram API ID, can be obtained from https://my.telegram.org
 api_hash = 'example_api_hash'  # Example Telegram API Hash, also obtained from https://my.telegram.org
 
+
 # Flags
+CONVERT_UNICODE = True  # Set to False to keep unicode characters in the output. (not recommended)
+CASE_INSENSITIVE = True
 IGNORE_COMMON_WORDS = False
 SHOW_PROGRESS_BAR = True
-CASE_INSENSITIVE = True
-CONVERT_UNICODE = True  # Set to False to keep unicode characters in the output. (not recommended)
 COUNT_REACTIONS = True
-LOGOUT = False  # Set to True to delete the current session file.
+LOGOUT = False  # Set to True to delete the session file after running the script.
 
 
 # Limits
-TOP_PHRASE_LIMIT = 20  # Limit for top messages stored per user
-TOP_ACTIVE_DAYS_LIMIT = 10  # Limit for top active days stored per user
-GLOBAL_MESSAGE_LIMIT = 20  # Limit for top global messages
-TOP_REACTION_LIMIT = 10  # Limit for top reactions
-GLOBAL_RANKING_LIMIT = 20  # Limit for global ranking data (e.g., loud_users, cursing_users)
-CATEGORY_MENTION_LIMIT = 100  # Limit for category mentions (lookup.py)
+USER_WORD_LIMIT = 100  # Limit for top words stored per user
+USER_REACTION_LIMIT = 20  # Limit for top reactions stored per user
+USER_CATEGORY_LIMIT = 10  # Limit for top categories stored per user
+USER_ACTIVE_DAYS_LIMIT = 3  # Limit for top active days stored per user
+
+GLOBAL_WORD_LIMIT = 50  # Limit for top global words.
+GLOBAL_REACTION_LIMIT = 10  # Limit for top global reactions.
+GLOBAL_CATEGORY_LIMIT = 1000  # Limit for top category mentions (see phrases.py)
+GLOBAL_RANKING_LIMIT = 50  # Limit for global ranking data (e.g., top users by active days, by media count, etc.)
 
 
 # File paths for collect_data.py

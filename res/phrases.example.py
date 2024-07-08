@@ -14,6 +14,10 @@ For example, put 'united states of america' before 'united states'. (and both be
 By default nothing is ignored. Set `IGNORE_COMMON_WORDS` in `config.py` to `True` to ignore these words.
 """
 
+
+from res.explicit import curses
+
+
 category_sets = {  # Words only, no phrases
     'names': {('james', 'jimmy', 'jim'), 'rose', ('michael', 'mike'), ('jessica', 'jess')}, # Use tuple for aliases
     'fruits': {'apple', 'banana', 'pineapple', 'durian', 'mango', 'orange', 'grape', 'kiwi', 'strawberry', 'watermelon'},
@@ -23,6 +27,8 @@ category_sets = {  # Words only, no phrases
     'numbers': set(map(str, range(1001))),  # Make sure to use strings.
     'celebrities': {'musk', 'bezos', 'gates', 'zuckerberg'},
     'responses': {'yes', 'no', 'maybe'},
+    'common phrases': {'thank you', 'you are welcome', 'good morning', 'good night'},
+    'curses': curses,  # Import from explicit.py
 }
 
 ignored_words = {
