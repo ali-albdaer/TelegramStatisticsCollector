@@ -34,42 +34,75 @@ A set of Python scripts that collect and analyze statistics from Telegram group 
    telegram_group_id = 'your_group_id'
    ```
 
-2. **Optionally configure the following parameters:**
+2. **Choose the paths for the output files:**
+
    ```python
    # res/config.py
-   TOP_PHRASE_LIMIT = 20
-   TOP_ACTIVE_DAYS_LIMIT = 10
-   GLOBAL_MESSAGE_LIMIT = 30
-   GLOBAL_RANKING_LIMIT = 10
-   CATEGORY_MENTION_LIMIT = 100
+   # File paths for collect_data.py
+   session_file = f'{telegram_user}.session'
+   global_stats_json = 'data/global_stats.json'
+   user_stats_json = 'data/user_stats.json'
+   user_stats_db = 'data/users.db'
 
-   IGNORE_COMMON_WORDS = True
-   SHOW_PROGRESS_BAR = True
-   CASE_INSENSITIVE = True
-   CONVERT_UNICODE = True
-   LOGOUT = False
+   # File paths for get_all_words.py
+   sensitive_freq_json = 'data/all_words_case_sensitive_freq.json'
+   sensitive_alpha_json = 'data/all_words_case_sensitive_alpha.json'
+   insensitive_freq_json = 'data/all_words_case_insensitive_freq.json'
+   insensitive_alpha_json = 'data/all_words_case_insensitive_alpha.json'
    ```
 
-3. **Create a `phrases.py` file in the `res` directory and add the words you want to track (see `res/phrases.example.py`):**
+3. **Optionally configure the following parameters:**
+   ```python
+   # res/config.py
+   # Flags
+   CONVERT_UNICODE = True
+   CASE_INSENSITIVE = True
+   IGNORE_COMMON_WORDS = False
+   SHOW_PROGRESS_BAR = True
+   COUNT_REACTIONS = True
+   LOGOUT = False
+   GLOBAL_RANKING_BY_RATIO = True
+
+   # Limits
+   MIN_WORD_LENGTH = 1
+
+   USER_WORD_LIMIT = 100
+   USER_REACTION_LIMIT = 20
+   USER_CATEGORY_LIMIT = 10
+   USER_ACTIVE_DAYS_LIMIT = 3
+
+   GLOBAL_WORD_LIMIT = 50
+   GLOBAL_REACTION_LIMIT = 10 
+   GLOBAL_CATEGORY_LIMIT = 1000 
+   GLOBAL_RANKING_LIMIT = 50 
+   ```
+
+4. **Create an `explivit.py` file in the `res` directory and flag certain words as curse words (see `res/explicit.example.py`):**
+   ```python
+   # res/explicit.py
+   curses = {"slubberdagullion", "gobemouche", "fopdoodle", "tatterdemalion", "scallywag"}
+   ```
+
+5. **Create a `phrases.py` file in the `res` directory and add the words/phrases you want to track (see `res/phrases.example.py`):**
 
    ```python
    # res/phrase.py
+   from res.explicit import curses
+
    category_sets = {
-      'greetings': {'hello', 'hi', 'hey'},
-      'farewells': {'bye', 'goodbye'}
       'animals': {'dog', 'cat', 'elephant', 'giraffe'},
-      'colors': {'red', 'blue', 'green', 'yellow', 'orange', 'purple'},
+      'colors': {'black', 'white', 'red', 'blue', 'green'},
+      'countires'; {('united states', 'usa', 'america'), 'canada', 'mexico'},
+      'scientists': {('albert einstein', 'einstein'), ('nicola tesla', 'tesla')},
+      'cars': {'bmw', 'toyota', 'tesla'},
+      'letters': {'a', 'b', 'c'},
       'numbers': set(map(str, range(1001))), 
+      'curses': curses
    }
 
    ignored_words = {"the", "in", "a", "it", "is", "and", "to", "of", "i", "you"}
    ```
 
-4. **Flag certain words as curse words or implement your custom logic like fuzzy search (see `res/explicit.example.py`):**
-   ```python
-   # res/explicit.py
-   curses = {"slubberdagullion", "gobemouche", "fopdoodle", "tatterdemalion", "scallywag"}
-   ```
    
 ## Usage
 
