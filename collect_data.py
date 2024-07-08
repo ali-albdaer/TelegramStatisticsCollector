@@ -55,9 +55,8 @@ class User:
 
         return self.message_count, self.activeness, self.media_ratio, self.loudness, self.naughtiness
 
-
 def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_sets: dict):
-    sender_id = message.sender_id    
+    sender_id = message.sender_id
     user = user_stats[sender_id]
     user.messages[message.id] = message
 
@@ -105,46 +104,49 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         global_stats['word_count'] += word_count
         global_stats['letter_count'] += letter_count
 
+        used_positions = [False] * len(text)
+
+        def mark_used_positions(start, length):
+            for i in range(start, start + length):
+                used_positions[i] = True
+
+        def is_position_free(start, length):
+            return not any(used_positions[i] for i in range(start, start + length))
+
+        combined_patterns = {}
         for category, elements in category_sets.items():
             for element in elements:
-                was_found = False
-
                 if isinstance(element, tuple):
                     for alias in element:
-                        if ' ' in alias:
-                            _count = text.count(alias)
-                            if _count > 0:
-                                global_stats['top_categories'][category][element[0]] += _count
-                                was_found = True
-
-                        elif not was_found and alias in words:
-                            _count = words.count(alias)
-                            if _count > 0:
-                                user.category_words[category][element[0]] += _count
-                                global_stats['top_categories'][category][element[0]] += _count
+                        if alias not in combined_patterns:
+                            combined_patterns[alias] = (category, element[0])
                 else:
-                    if ' ' in element:
-                        _count = text.count(element)
-                        if _count > 0:
-                            global_stats['top_categories'][category][element] += _count
-                            was_found = True
+                    if element not in combined_patterns:
+                        combined_patterns[element] = (category, element)
 
-                    elif not was_found and element in words:
-                        _count = words.count(element)
-                        if _count > 0:
-                            user.category_words[category][element] += _count
-                            global_stats['top_categories'][category][element] += _count
+        # How did I obtain this pattern? ¯\_(ツ)_/¯
+        combined_pattern = re.compile(r'\b(?:' + '|'.join(re.escape(pattern) for pattern in combined_patterns) + r')\b')
 
+        for match in combined_pattern.finditer(text):
+            start, end = match.span()
+            matched_text = match.group()
+            if is_position_free(start, end - start):
+                category, primary_element = combined_patterns[matched_text]
+                user.category_words[category][primary_element] += 1
+                global_stats['top_categories'][category][primary_element] += 1
+                mark_used_positions(start, end - start)
 
     # Collect reactions. Currently only supports recent reactions.
     if COUNT_REACTIONS and message.reactions and message.reactions.recent_reactions:
         for reaction in message.reactions.recent_reactions:
             if reaction.peer_id:
-                user = user_stats.get(reaction.peer_id.user_id, None)
-                if not user:
-                    user = User(reaction.peer_id.user_id)
-                    user_stats[reaction.peer_id.user_id] = user
-                user.reactions_given[reaction.reaction.emoticon] += 1
+                reaction_user = user_stats.get(reaction.peer_id.user_id, None)
+
+                if not reaction_user:
+                    reaction_user = User(reaction.peer_id.user_id)
+                    user_stats[reaction.peer_id.user_id] = reaction_user
+
+                reaction_user.reactions_given[reaction.reaction.emoticon] += 1
 
             user.reactions_received[reaction.reaction.emoticon] += 1
             global_stats['top_reactions'][reaction.reaction.emoticon] += 1
