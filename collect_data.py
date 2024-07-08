@@ -84,13 +84,13 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         else:
             text = message.text
 
-        if text.isupper() and len(text) > 1:
+        if text.isupper():
             user.loud_message_count += 1
 
         if CASE_INSENSITIVE:
             text = text.lower()
 
-        words = re.findall(r'\b\w+\b', text)
+        words = [word for word in re.findall(r'\b\w+\b', text) if len(word) >= MIN_WORD_LENGTH]
         word_count = len(words)
         letter_count = sum(len(word) for word in words)
 
@@ -222,9 +222,9 @@ async def collect_stats():
 
 def save_global_stats(global_stats: dict):
     limited_top_active_users = sorted(global_stats['active_users'].items(), key=lambda x: x[1].activeness, reverse=True)[:GLOBAL_RANKING_LIMIT]
-    limited_top_loud_users = sorted(global_stats['loud_users'].items(), key=lambda x: x[1].loudness, reverse=True)[:GLOBAL_RANKING_LIMIT]
-    limited_top_media_users = sorted(global_stats['media_users'].items(), key=lambda x: x[1].media_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
-    limited_top_cursing_users = sorted(global_stats['cursing_users'].items(), key=lambda x: x[1].naughtiness, reverse=True)[:GLOBAL_RANKING_LIMIT]
+    limited_top_media_users = sorted(global_stats['media_users'].items(), key=lambda x: x[1].media_ratio if GLOBAL_RANKING_BY_RATIO else x[1].media_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
+    limited_top_loud_users = sorted(global_stats['loud_users'].items(), key=lambda x: x[1].loudness if GLOBAL_RANKING_BY_RATIO else x[1].loud_message_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
+    limited_top_cursing_users = sorted(global_stats['cursing_users'].items(), key=lambda x: x[1].naughtiness if GLOBAL_RANKING_BY_RATIO else x[1].profanity_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
 
     json_global_stats = {
         'message_count': global_stats['message_count'],

@@ -24,17 +24,20 @@ CASE_INSENSITIVE = True
 IGNORE_COMMON_WORDS = False
 SHOW_PROGRESS_BAR = True
 COUNT_REACTIONS = True
-LOGOUT = False  # Set to True to delete the session file after running the script.
+LOGOUT = False  # Set to True to delete the session file after running the script, you would need to authenticate Telegram again.
+GLOBAL_RANKING_BY_RATIO = True # Set to False to rank users by total count instead of ratio. Applies to all categories. (e.g., active days, media count, etc.)
 
 
 # Limits
-USER_WORD_LIMIT = 100  # Limit for top words stored per user
-USER_REACTION_LIMIT = 20  # Limit for top reactions stored per user
-USER_CATEGORY_LIMIT = 10  # Limit for top categories stored per user
-USER_ACTIVE_DAYS_LIMIT = 3  # Limit for top active days stored per user
+MIN_WORD_LENGTH = 1  # Minimum length for a string to be considered a word
 
-GLOBAL_WORD_LIMIT = 50  # Limit for top global words.
-GLOBAL_REACTION_LIMIT = 10  # Limit for top global reactions.
+USER_WORD_LIMIT = 50  # Limit for top words stored per user
+USER_REACTION_LIMIT = 20  # Limit for top reactions stored per user
+USER_CATEGORY_LIMIT = 1000  # Limit for top categories stored per user
+USER_ACTIVE_DAYS_LIMIT = 30  # Limit for top active days stored per user
+
+GLOBAL_WORD_LIMIT = 100  # Limit for top global words.
+GLOBAL_REACTION_LIMIT = 20  # Limit for top global reactions.
 GLOBAL_CATEGORY_LIMIT = 1000  # Limit for top category mentions (see phrases.py)
 GLOBAL_RANKING_LIMIT = 50  # Limit for global ranking data (e.g., top users by active days, by media count, etc.)
 
