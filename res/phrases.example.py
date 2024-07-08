@@ -35,5 +35,5 @@ ignored_words = {  # Set IGNORE_COMMON_WORDS in res/config.py to True to ignore 
     'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 
     'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 
     'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 
-    'go', 'me', 'i', 'when', 'make'
+    'go', 'me', 'i', 'when', 'make', 'is', 'was', 'am', 'are',
 }
