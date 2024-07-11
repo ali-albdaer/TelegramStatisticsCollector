@@ -46,6 +46,7 @@ class User:
         self.category_words = defaultdict(Counter)  # Keywords and phrases.
         self.reactions_given = Counter()
         self.reactions_received = Counter()
+        self.total_string = ''  # All messages concatenated.
 
     def calculate_ratios(self):
         curses = self.category_words.get('curses', Counter())
@@ -172,7 +173,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     global_stats['word_count'] += word_count
     global_stats['letter_count'] += letter_count
 
-    count_category_sets(text, user.category_words, global_stats)
+    user.total_string += text
 
 
 async def collect_stats():
@@ -219,7 +220,6 @@ async def collect_stats():
 
     for user in user_stats.values():
         message_count, activeness, media_ratio, loudness, naughtiness = user.calculate_ratios()
-
         global_stats['message_count'] += message_count
 
         if activeness:
@@ -233,6 +233,8 @@ async def collect_stats():
 
         if naughtiness:
             global_stats['cursing_users'][user.user_id] = user
+
+        count_category_sets(user.total_string, user.category_words, global_stats)
 
     save_global_stats(global_stats)
     save_user_stats(user_stats)
