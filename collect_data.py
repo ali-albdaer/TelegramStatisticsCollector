@@ -173,7 +173,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     global_stats['letter_count'] += letter_count
 
     # Update the total string for category matching and add a space between messages.
-    user.total_string += text + '\n\n'
+    user.total_string += text + '\n\n\n'
 
 
 async def collect_stats():
@@ -202,7 +202,7 @@ async def collect_stats():
     total_messages = (await telegram_client.get_messages(group_entity, limit=0)).total
     processed_messages = 0
 
-    async for message in telegram_client.iter_messages(group_entity):
+    async for message in telegram_client.iter_messages(group_entity, reverse=True):
         if not message.sender_id:  # Skip messages from deleted accounts.
             continue
 
