@@ -21,11 +21,13 @@ api_hash = 'example_api_hash'  # Example Telegram API Hash, also obtained from h
 # Flags
 CONVERT_UNICODE = True  # Set to False to keep unicode characters in the output. (not recommended)
 CASE_INSENSITIVE = True
-IGNORE_COMMON_WORDS = False
+IGNORE_COMMON_WORDS = False  # Set to True to ignore the words found in res/phrases.py.
+IGNORE_URLS = False  # Replaces URLs with a white space ' '.
+GET_CHANNEL_LOG = True  # Set to True to get the log of the chat as a text file.
 SHOW_PROGRESS_BAR = True
 COUNT_REACTIONS = True
 LOGOUT = False  # Set to True to delete the session file after running the script, you would need to authenticate Telegram again.
-GLOBAL_RANKING_BY_RATIO = True # Set to False to rank users by total count instead of ratio. Applies to all categories. (e.g., active days, media count, etc.)
+GLOBAL_RANKING_BY_RATIO = True  # Set to False to rank users by total count instead of ratio. Applies to all categories. (e.g., active days, media count, etc.)
 
 
 # Limits
@@ -44,6 +46,7 @@ GLOBAL_RANKING_LIMIT = 50  # Limit for global ranking data (e.g., top users by a
 
 # File paths for collect_data.py
 session_file = f'data/{telegram_user}.session'
+log_channel_file = 'data/channel_log.txt'
 global_stats_json = 'data/global_stats.json'
 user_stats_json = 'data/user_stats.json'
 user_stats_db = 'data/users.db'

@@ -22,6 +22,10 @@ logging.basicConfig(level=logging.INFO)
 if not os.path.exists('data'):
     os.makedirs('data')
 
+if GET_CHANNEL_LOG:
+    with open(log_channel_file, 'w', encoding='utf-8') as file:
+        file.write('')
+
 
 telegram_client = TelegramClient(session_file, api_id, api_hash)
 
@@ -105,46 +109,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     if message.media:
         user.media_count += 1
 
-    if message.text:
-        if CONVERT_UNICODE:
-            text = unidecode(message.text)
-        else:
-            text = message.text
-
-        if text.isupper():
-            user.loud_message_count += 1
-
-        if CASE_INSENSITIVE:
-            text = text.lower()
-
-        # Pattern for matching mentions, [name](tg://user?id=id)
-        pattern = r'\[(.*?)\]\(tg://user\?id=(\d+)\)'
-        match = re.search(pattern, text)
-
-        if match:
-            name = match.group(1)
-            #user_id = match.group(2)
-            text = re.sub(pattern, name, text)
-
-        words = [word for word in re.findall(r'\b\w+\b', text) if len(word) >= MIN_WORD_LENGTH]
-
-        word_count = len(words)
-        letter_count = sum(len(word) for word in words)
-
-        if IGNORE_COMMON_WORDS:
-            words = [word for word in words if word not in ignored_words]
-
-        user.word_counter.update(words)
-        user.word_count += word_count
-        user.letter_count += letter_count
-
-        global_stats['top_words'].update(words)
-        global_stats['word_count'] += word_count
-        global_stats['letter_count'] += letter_count
-
-        count_category_sets(text, user.category_words, global_stats)
-
-    # Collect reactions. Currently only supports recent reactions.
+    # Collect reactions.
     if COUNT_REACTIONS and message.reactions and message.reactions.recent_reactions:
         for reaction in message.reactions.recent_reactions:
             if reaction.peer_id:
@@ -158,6 +123,55 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
 
             user.reactions_received[reaction.reaction.emoticon] += 1
             global_stats['top_reactions'][reaction.reaction.emoticon] += 1
+
+    if not message.text:
+        return
+    
+    if CONVERT_UNICODE:
+        text = unidecode(message.text)
+
+    else:
+        text = message.text
+
+    if text.isupper():
+        user.loud_message_count += 1
+
+    if CASE_INSENSITIVE:
+        text = text.lower()
+
+    if IGNORE_URLS:
+        text = re.sub(r'http\S+', ' ', text)
+
+    # Pattern for matching mentions, [name](tg://user?id=id)
+    pattern = r'\[(.*?)\]\(tg://user\?id=(\d+)\)'
+    match = re.search(pattern, text)
+
+    if match:
+        name = match.group(1)
+        #user_id = match.group(2)
+        text = re.sub(pattern, name, text)
+
+    if GET_CHANNEL_LOG:
+        with open(log_channel_file, 'a', encoding='utf-8') as file:
+            file.write(f'{user.name}: {text}\n')
+
+    words = [word for word in re.findall(r'\b\w+\b', text) if len(word) >= MIN_WORD_LENGTH]
+
+    word_count = len(words)
+    letter_count = sum(len(word) for word in words)
+
+    if IGNORE_COMMON_WORDS:
+        words = [word for word in words if word not in ignored_words]
+
+    user.word_counter.update(words)
+    user.word_count += word_count
+    user.letter_count += letter_count
+
+    global_stats['top_words'].update(words)
+    global_stats['word_count'] += word_count
+    global_stats['letter_count'] += letter_count
+
+    count_category_sets(text, user.category_words, global_stats)
 
 
 async def collect_stats():
