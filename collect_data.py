@@ -46,6 +46,7 @@ class User:
         self.category_words = defaultdict(Counter)  # Keywords and phrases.
         self.reactions_given = Counter()
         self.reactions_received = Counter()
+        self.total_string = ''  # All messages concatenated.
 
     def calculate_ratios(self):
         curses = self.category_words.get('curses', Counter())
@@ -60,7 +61,7 @@ class User:
         return self.message_count, self.activeness, self.media_ratio, self.loudness, self.naughtiness
 
 
-# This function is very slow and should be optimized.
+# This function is very fast after being optimized.
 def count_category_sets(text, user_category_words: dict, global_stats: dict):
     top_categories = global_stats["top_categories"]
 
@@ -172,7 +173,8 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     global_stats['word_count'] += word_count
     global_stats['letter_count'] += letter_count
 
-    count_category_sets(text, user.category_words, global_stats)
+    # Update the total string for category matching and add a space between messages.
+    user.total_string += text + '\n\n'
 
 
 async def collect_stats():
@@ -218,8 +220,8 @@ async def collect_stats():
         print()
 
     for user in user_stats.values():
+        count_category_sets(user.total_string, user.category_words, global_stats)
         message_count, activeness, media_ratio, loudness, naughtiness = user.calculate_ratios()
-
         global_stats['message_count'] += message_count
 
         if activeness:
@@ -233,6 +235,12 @@ async def collect_stats():
 
         if naughtiness:
             global_stats['cursing_users'][user.user_id] = user
+
+        if SHOW_PROGRESS_BAR:
+            print(f'\rProcessed Users: [{len(global_stats["active_users"])} / {len(user_stats)}]', end='')
+
+    if SHOW_PROGRESS_BAR:
+        print()
 
     save_global_stats(global_stats)
     save_user_stats(user_stats)
