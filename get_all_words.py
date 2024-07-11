@@ -3,10 +3,12 @@ import json
 import asyncio
 import re
 from collections import Counter
-from unidecode import unidecode
 
 from telethon import TelegramClient
 from res.config import *
+
+if CONVERT_UNICODE:
+    from unidecode import unidecode
 
 
 if not os.path.exists('data'):
@@ -30,7 +32,12 @@ async def collect_word_stats():
 
     async for message in telegram_client.iter_messages(group_entity):
         if message.text:
-            text = unidecode(message.text)  # Convert Unicode characters to ASCII
+            if CONVERT_UNICODE:
+                text = unidecode(message.text)  # Convert Unicode characters to ASCII
+
+            else:
+                text = message.text.encode('utf-8', errors='replace').decode('utf-8')
+
             words = re.findall(r'\b\w+\b', text)
 
             all_words.update(words)
@@ -41,7 +48,7 @@ async def collect_word_stats():
 
     await telegram_client.disconnect()
 
-    print()  # Print newline after progress bar
+    print()
 
     save_word_stats_json(sensitive_freq_json, dict(sorted(all_words.items(), key=lambda x: x[1], reverse=True)))
     save_word_stats_json(sensitive_alpha_json, dict(sorted(all_words.items(), key=lambda x: x[0])))
