@@ -173,7 +173,8 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     global_stats['word_count'] += word_count
     global_stats['letter_count'] += letter_count
 
-    user.total_string += text
+    # Update the total string for category matching and add a space between messages.
+    user.total_string += text + '\n\n'
 
 
 async def collect_stats():
@@ -235,6 +236,12 @@ async def collect_stats():
             global_stats['cursing_users'][user.user_id] = user
 
         count_category_sets(user.total_string, user.category_words, global_stats)
+
+        if SHOW_PROGRESS_BAR:
+            print(f'\rProcessed Users: [{len(global_stats["active_users"])} / {len(user_stats)}]', end='')
+
+    if SHOW_PROGRESS_BAR:
+        print()
 
     save_global_stats(global_stats)
     save_user_stats(user_stats)
