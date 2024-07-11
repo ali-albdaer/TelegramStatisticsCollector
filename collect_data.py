@@ -55,7 +55,35 @@ class User:
 
         return self.message_count, self.activeness, self.media_ratio, self.loudness, self.naughtiness
 
-def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_sets: dict):
+
+def count_category_sets(text, user_category_words: dict, global_stats: dict):
+    top_categories = global_stats["top_categories"]
+
+    for category, elements in category_sets.items():
+        for element in elements:
+            if isinstance(element, tuple):
+                primary_key = element[0]
+                aliases = element[1:]
+
+            else:
+                primary_key = element
+                aliases = ()
+            
+            pattern = r'\b(?:{})\b'.format('|'.join([re.escape(alias) for alias in (primary_key,) + aliases]))
+            count = len(re.findall(pattern, text))
+            
+            if count > 0:
+                if isinstance(element, tuple):
+                    primary_key = element[0]
+
+                else:
+                    primary_key = element
+                    
+                top_categories[category][primary_key] = top_categories[category].get(primary_key, 0) + count
+                # user_category_words[category][primary_key] = user_category_words[category].get(primary_key, 0) + count
+    
+    
+def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     sender_id = message.sender_id
     user = user_stats[sender_id]
     user.messages[message.id] = message
@@ -89,7 +117,6 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         if CASE_INSENSITIVE:
             text = text.lower()
 
-
         # Pattern for matching mentions, [name](tg://user?id=id)
         pattern = r'\[(.*?)\]\(tg://user\?id=(\d+)\)'
         match = re.search(pattern, text)
@@ -115,37 +142,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         global_stats['word_count'] += word_count
         global_stats['letter_count'] += letter_count
 
-        used_positions = [False] * len(text)
-
-        def mark_used_positions(start, length):
-            for i in range(start, start + length):
-                used_positions[i] = True
-
-        def is_position_free(start, length):
-            return not any(used_positions[i] for i in range(start, start + length))
-
-        combined_patterns = {}
-        for category, elements in category_sets.items():
-            for element in elements:
-                if isinstance(element, tuple):
-                    for alias in element:
-                        if alias not in combined_patterns:
-                            combined_patterns[alias] = (category, element[0])
-                else:
-                    if element not in combined_patterns:
-                        combined_patterns[element] = (category, element)
-
-        # How did I obtain this pattern? ¯\_(ツ)_/¯
-        combined_pattern = re.compile(r'\b(?:' + '|'.join(re.escape(pattern) for pattern in combined_patterns) + r')\b')
-
-        for match in combined_pattern.finditer(text):
-            start, end = match.span()
-            matched_text = match.group()
-            if is_position_free(start, end - start):
-                category, primary_element = combined_patterns[matched_text]
-                user.category_words[category][primary_element] += 1
-                global_stats['top_categories'][category][primary_element] += 1
-                mark_used_positions(start, end - start)
+        count_category_sets(text, user.category_words, global_stats)
 
     # Collect reactions. Currently only supports recent reactions.
     if COUNT_REACTIONS and message.reactions and message.reactions.recent_reactions:
@@ -196,7 +193,7 @@ async def collect_stats():
         if message.sender_id not in user_stats:
             user_stats[message.sender_id] = User(message.sender_id)
 
-        fetch_message_stats(message, user_stats, global_stats, category_sets)
+        fetch_message_stats(message, user_stats, global_stats)
 
         processed_messages += 1
         if SHOW_PROGRESS_BAR:
