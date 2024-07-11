@@ -19,7 +19,7 @@ api_hash = 'example_api_hash'  # Example Telegram API Hash, also obtained from h
 
 
 # Flags
-CONVERT_UNICODE = True  # Set to False to keep unicode characters in the output. (not recommended)
+CONVERT_UNICODE = False  # Set to True to convert unicode characters to their ASCII equivalent.
 CASE_INSENSITIVE = True
 IGNORE_COMMON_WORDS = False  # Set to True to ignore the words found in res/phrases.py.
 IGNORE_URLS = False  # Replaces URLs with a white space ' '.
