@@ -16,7 +16,7 @@ if CONVERT_UNICODE:
     from unidecode import unidecode
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 
 if not os.path.exists('data'):
