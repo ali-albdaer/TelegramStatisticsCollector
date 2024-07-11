@@ -131,7 +131,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
         text = unidecode(message.text)
 
     else:
-        text = message.text
+        text = text.encode('utf-8', errors='replace')
 
     if text.isupper():
         user.loud_message_count += 1
