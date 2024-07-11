@@ -89,7 +89,18 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict, category_
         if CASE_INSENSITIVE:
             text = text.lower()
 
+
+        # Pattern for matching mentions, [name](tg://user?id=id)
+        pattern = r'\[(.*?)\]\(tg://user\?id=(\d+)\)'
+        match = re.search(pattern, text)
+
+        if match:
+            name = match.group(1)
+            #user_id = match.group(2)
+            text = re.sub(pattern, name, text)
+
         words = [word for word in re.findall(r'\b\w+\b', text) if len(word) >= MIN_WORD_LENGTH]
+
         word_count = len(words)
         letter_count = sum(len(word) for word in words)
 
