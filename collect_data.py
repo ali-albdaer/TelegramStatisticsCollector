@@ -220,6 +220,7 @@ async def collect_stats():
         print()
 
     for user in user_stats.values():
+        count_category_sets(user.total_string, user.category_words, global_stats)
         message_count, activeness, media_ratio, loudness, naughtiness = user.calculate_ratios()
         global_stats['message_count'] += message_count
 
@@ -234,8 +235,6 @@ async def collect_stats():
 
         if naughtiness:
             global_stats['cursing_users'][user.user_id] = user
-
-        count_category_sets(user.total_string, user.category_words, global_stats)
 
         if SHOW_PROGRESS_BAR:
             print(f'\rProcessed Users: [{len(global_stats["active_users"])} / {len(user_stats)}]', end='')
