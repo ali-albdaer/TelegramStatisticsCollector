@@ -61,7 +61,6 @@ class User:
         return self.message_count, self.activeness, self.media_ratio, self.loudness, self.naughtiness
 
 
-# This function is very fast after being optimized.
 def count_category_sets(text, user_category_words: dict, global_stats: dict):
     top_categories = global_stats["top_categories"]
 
