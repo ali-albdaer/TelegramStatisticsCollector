@@ -79,8 +79,8 @@ def count_category_sets(text, user_category_words: dict, global_stats: dict):
                 else:
                     primary_key = element
                     
-                top_categories[category][primary_key] = top_categories[category].get(primary_key, 0) + count
-                # user_category_words[category][primary_key] = user_category_words[category].get(primary_key, 0) + count
+                top_categories[category][primary_key] += count
+                user_category_words[category][primary_key] += count
     
     
 def fetch_message_stats(message, user_stats: dict, global_stats: dict):
