@@ -23,6 +23,11 @@ if not os.path.exists('data'):
     os.makedirs('data')
 
 
+if GET_CHANNEL_LOG:
+    with open(log_channel_file, 'w', encoding='utf-8') as file:
+        file.write('')
+
+
 telegram_client = TelegramClient(session_file, api_id, api_hash)
 
 
@@ -135,18 +140,30 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     else:
         text = message.text.encode('utf-8', errors='replace').decode('utf-8')
 
-    if REMOVE_ACCENTS:
-        for letter, accents in ACCENTED_CHARS.items():
-            text = re.sub(f'[{accents}]', letter, text)
 
     if text.isupper():
         user.loud_message_count += 1
+
+    if GET_CHANNEL_LOG: # Logging is done before processing the text.
+        if SHOW_DATE:
+            date_str = message.date.strftime('%Y-%m-%d %H:%M:%S')
+            text = f'[ {date_str} ] <{user.name}> {text}\n'
+
+        else:
+            text = f'<{user.name}> {text}\n'
+
+        with open(log_channel_file, 'a', encoding='utf-8') as file:
+            file.write(text)
 
     if CASE_INSENSITIVE:
         text = text.lower()
 
     if IGNORE_URLS:
         text = re.sub(r'http\S+', ' ', text)
+
+    if REMOVE_ACCENTS:
+        for letter, accents in ACCENTED_CHARS.items():
+            text = re.sub(f'[{accents}]', letter, text)
 
     # Pattern for matching mentions, [name](tg://user?id=id)
     pattern = r'\[(.*?)\]\(tg://user\?id=(\d+)\)'
