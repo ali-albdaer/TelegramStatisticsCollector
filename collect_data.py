@@ -282,8 +282,8 @@ async def collect_stats():
 def save_global_stats(global_stats: dict):
     limited_top_active_users = sorted(global_stats['active_users'].items(), key=lambda x: x[1].activeness if GLOBAL_RANKING_BY_RATIO else x[1].message_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
     limited_top_media_users = sorted(global_stats['media_users'].items(), key=lambda x: x[1].media_ratio if GLOBAL_RANKING_BY_RATIO else x[1].media_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
-    limited_top_reacting_users = sorted(global_stats['reacting_users'].items(), key=lambda x: x[1].rr_ratio if GLOBAL_RANKING_BY_RATIO else x[1].reactions_received_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
-    limited_top_reacted_users = sorted(global_stats['reacted_users'].items(), key=lambda x: x[1].rg_ratio if GLOBAL_RANKING_BY_RATIO else x[1].reactions_given_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
+    limited_top_reacted_users = sorted(global_stats['reacted_users'].items(), key=lambda x: x[1].rr_ratio if GLOBAL_RANKING_BY_RATIO else x[1].reactions_received_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
+    limited_top_reacting_users = sorted(global_stats['reacting_users'].items(), key=lambda x: x[1].rg_ratio if GLOBAL_RANKING_BY_RATIO else x[1].reactions_given_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
     limited_top_loud_users = sorted(global_stats['loud_users'].items(), key=lambda x: x[1].loudness if GLOBAL_RANKING_BY_RATIO else x[1].loud_message_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
     limited_top_cursing_users = sorted(global_stats['cursing_users'].items(), key=lambda x: x[1].naughtiness if GLOBAL_RANKING_BY_RATIO else x[1].curse_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
 
@@ -294,8 +294,8 @@ def save_global_stats(global_stats: dict):
         'top_active_users': {user_id: {'name': user.name, 'activeness': user.activeness, 'message_count': user.message_count, 'word_count': user.word_count, 'letter_count': user.letter_count} for user_id, user in limited_top_active_users},
         'top_loud_users': {user_id: {'name': user.name, 'loudness': user.loudness, 'loud_message_count': user.loud_message_count} for user_id, user in limited_top_loud_users},
         'top_media_users': {user_id: {'name': user.name, 'media_ratio': user.media_ratio, 'media_count': user.media_count} for user_id, user in limited_top_media_users},
-        'top_reacting_users': {user_id: {'name': user.name, 'rr_ratio': user.rr_ratio, 'reactions_received_count': user.reactions_received_count} for user_id, user in limited_top_reacting_users},
-        'top_reacted_users': {user_id: {'name': user.name, 'rg_ratio': user.rg_ratio, 'reactions_given_count': user.reactions_given_count} for user_id, user in limited_top_reacted_users},
+        'top_reacted_users': {user_id: {'name': user.name, 'rr_ratio': user.rr_ratio, 'reactions_received_count': user.reactions_received_count} for user_id, user in limited_top_reacted_users},
+        'top_reacting_users': {user_id: {'name': user.name, 'rg_ratio': user.rg_ratio, 'reactions_given_count': user.reactions_given_count} for user_id, user in limited_top_reacting_users},
         'top_cursing_users': {user_id: {'name': user.name, 'naughtiness': user.naughtiness, 'curse_count': user.curse_count} for user_id, user in limited_top_cursing_users},
         'top_reactions': dict(global_stats['top_reactions'].most_common(GLOBAL_REACTION_LIMIT)),
         'top_categories': {k: dict(v.most_common(GLOBAL_CATEGORY_LIMIT)) for k, v in global_stats['top_categories'].items()},
