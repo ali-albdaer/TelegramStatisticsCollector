@@ -147,13 +147,13 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     if GET_CHANNEL_LOG: # Logging is done before processing the text.
         if SHOW_DATE:
             date_str = message.date.strftime('%Y-%m-%d %H:%M:%S')
-            text = f'[ {date_str} ] <{user.name}> {text}\n'
+            _text = f'[ {date_str} ] <{user.name}> {text}\n'
 
         else:
-            text = f'<{user.name}> {text}\n'
+            _text = f'<{user.name}> {text}\n'
 
         with open(log_channel_file, 'a', encoding='utf-8') as file:
-            file.write(text)
+            file.write(_text)
 
     if CASE_INSENSITIVE:
         text = text.lower()
