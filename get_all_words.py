@@ -7,12 +7,18 @@ from collections import Counter
 from telethon import TelegramClient
 from res.config import *
 
+
 if CONVERT_UNICODE:
     from unidecode import unidecode
 
 
 if not os.path.exists('data'):
     os.makedirs('data')
+
+
+if GET_CHANNEL_LOG:
+    with open(log_channel_file, 'w', encoding='utf-8') as file:
+        file.write('')
 
 
 async def collect_word_stats():
@@ -37,6 +43,30 @@ async def collect_word_stats():
 
             else:
                 text = message.text.encode('utf-8', errors='replace').decode('utf-8')
+
+            if IGNORE_URLS:
+                text = re.sub(r'http\S+', ' ', text)
+
+            if GET_CHANNEL_LOG:
+                if message.sender:
+                    if message.sender.first_name:
+                        name = message.sender.first_name + (' ' + message.sender.last_name if message.sender.last_name else '')
+                    elif message.sender.username:
+                        name = message.sender.username
+                    else:
+                        name = 'Unknown User'
+                else:
+                    name = 'Unknown User'
+                    
+                if SHOW_DATE:
+                    date_str = message.date.strftime('%Y-%m-%d %H:%M:%S')
+                    text = f'[ {date_str} ] <{name}> {text}\n'
+
+                else:
+                    text = f'<{name}> {text}\n'
+
+                with open(log_channel_file, 'a', encoding='utf-8') as file:
+                    file.write(text)
 
             words = re.findall(r'\b\w+\b', text)
 

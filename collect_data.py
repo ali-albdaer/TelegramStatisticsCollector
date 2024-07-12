@@ -22,10 +22,6 @@ logging.basicConfig(level=logging.INFO)
 if not os.path.exists('data'):
     os.makedirs('data')
 
-if GET_CHANNEL_LOG:
-    with open(log_channel_file, 'w', encoding='utf-8') as file:
-        file.write('')
-
 
 telegram_client = TelegramClient(session_file, api_id, api_hash)
 
@@ -134,9 +130,9 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     else:
         text = message.text.encode('utf-8', errors='replace').decode('utf-8')
 
-    if GET_CHANNEL_LOG:
-        with open(log_channel_file, 'a', encoding='utf-8') as file:
-            file.write(f'{user.name}: {text}\n')
+    if REMOVE_ACCENTS:
+        for letter, accents in ACCENTED_CHARS.items():
+            text = re.sub(f'[{accents}]', letter, text)
 
     if text.isupper():
         user.loud_message_count += 1
@@ -153,7 +149,6 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
 
     if match:
         name = match.group(1)
-        #user_id = match.group(2)
         text = re.sub(pattern, name, text)
 
     words = [word for word in re.findall(r'\b\w+\b', text) if len(word) >= MIN_WORD_LENGTH]
@@ -172,7 +167,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     global_stats['word_count'] += word_count
     global_stats['letter_count'] += letter_count
 
-    # Update the total string for category matching and add a space between messages.
+    # Update the total string for category matching along with a separator.
     user.total_string += text + '\n\n\n'
 
 
@@ -203,7 +198,7 @@ async def collect_stats():
     processed_messages = 0
 
     async for message in telegram_client.iter_messages(group_entity):
-        if not message.sender_id:  # Skip messages from deleted accounts.
+        if not message.sender_id:  # Skip system messages.
             continue
 
         if message.sender_id not in user_stats:

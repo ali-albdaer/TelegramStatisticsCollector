@@ -19,15 +19,36 @@ api_hash = 'example_api_hash'  # Example Telegram API Hash, also obtained from h
 
 
 # Flags
-CONVERT_UNICODE = False  # Set to True to convert unicode characters to their ASCII equivalent.
 CASE_INSENSITIVE = True
+CONVERT_UNICODE = False  # Set to True to convert unicode characters to their ASCII equivalent.
+REMOVE_ACCENTS = False  # Set to True to remove accents from characters.
 IGNORE_COMMON_WORDS = False  # Set to True to ignore the words found in res/phrases.py.
 IGNORE_URLS = False  # Replaces URLs with a white space ' '.
 GET_CHANNEL_LOG = True  # Set to True to get the log of the chat as a text file.
+SHOW_DATE = False  # Set to True to show the date of the messages in the log file.
 SHOW_PROGRESS_BAR = True
 COUNT_REACTIONS = True
 LOGOUT = False  # Set to True to delete the session file after running the script, you would need to authenticate Telegram again.
 GLOBAL_RANKING_BY_RATIO = True  # Set to False to rank users by total count instead of ratio. Applies to all categories. (e.g., active days, media count, etc.)
+
+ACCENTED_CHARS = {
+    "a": "áàâäãåā",
+    "c": "çćč",
+    "e": "éèêëēę",
+    "i": "íìîïī",
+    "n": "ñń",
+    "o": "óòôöõ",
+    "u": "úùûü",
+    "y": "ýÿ",
+    "A": "ÁÀÂÄÃÅ",
+    "C": "ÇĆČ",
+    "E": "ÉÈÊË",
+    "I": "ÍÌÎÏ",
+    "N": "ÑŃ",
+    "O": "ÓÒÔÖÕ",
+    "U": "ÚÙÛÜ",
+    "Y": "ÝŸ"
+}
 
 
 # Limits
