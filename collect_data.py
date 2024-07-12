@@ -57,8 +57,8 @@ class User:
         return self.message_count, self.activeness, self.media_ratio, self.loudness, self.naughtiness
 
 
-def count_category_sets(text, user_category_words: dict, global_stats: dict):
-    top_categories = global_stats["top_categories"]
+def analyze_message(user: User, global_stats: dict):
+    text = user.total_string
 
     for category, elements in category_sets.items():
         for element in elements:
@@ -80,8 +80,8 @@ def count_category_sets(text, user_category_words: dict, global_stats: dict):
                 else:
                     primary_key = element
                     
-                top_categories[category][primary_key] += count
-                user_category_words[category][primary_key] += count
+                global_stats['top_categories'][category][primary_key] += count
+                user.category_words[category][primary_key] += count
     
     
 def fetch_message_stats(message, user_stats: dict, global_stats: dict):
@@ -167,7 +167,8 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     global_stats['word_count'] += word_count
     global_stats['letter_count'] += letter_count
 
-    # Update the total string for category matching along with a separator.
+    # Update the total string for category matching along with a separator. 
+    # Part of the string analysis is done cumulatively in the analyze_message function.
     user.total_string += text + '\n\n\n'
 
 
@@ -214,7 +215,8 @@ async def collect_stats():
         print()
 
     for user in user_stats.values():
-        count_category_sets(user.total_string, user.category_words, global_stats)
+        analyze_message(user, global_stats)
+
         message_count, activeness, media_ratio, loudness, naughtiness = user.calculate_ratios()
         global_stats['message_count'] += message_count
 
@@ -342,4 +344,9 @@ def save_user_stats(user_stats: dict):
 
 
 if __name__ == '__main__':
-    asyncio.run(collect_stats())
+    try:
+        asyncio.run(collect_stats())
+
+    except KeyboardInterrupt:
+        print('\n[ Program Interrupted. ]')
+        
