@@ -16,7 +16,7 @@ if CONVERT_UNICODE:
     from unidecode import unidecode
 
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
 
 if not os.path.exists('data'):
@@ -202,7 +202,7 @@ async def collect_stats():
     total_messages = (await telegram_client.get_messages(group_entity, limit=0)).total
     processed_messages = 0
 
-    async for message in telegram_client.iter_messages(group_entity, reverse=True):
+    async for message in telegram_client.iter_messages(group_entity):
         if not message.sender_id:  # Skip messages from deleted accounts.
             continue
 
