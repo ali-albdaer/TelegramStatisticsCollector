@@ -1,6 +1,6 @@
 # Json to Word Clouds Extension
 
-This part of the project is used to convert the data obtained in `.json` format to nice word clouds, see the (examples)[word-cloud/examples]
+This part of the project is used to convert the data obtained in `.json` format to nice word clouds, see the (examples)[wordcloud-extension/examples]
 
 ## Installation
 
@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 ## Configuration
 
-1. **Create a `config.py` file in this `(word-cloud)` directory and specify the path for the json file (see `word-cloud/config.example.py`):**
+1. **Create a `config.py` file in this `(wordcloud-extension)` directory and specify the path for the json file (see `wordcloud-extension/config.example.py`):**
 
     ```python
     # word-cloud/config.py
