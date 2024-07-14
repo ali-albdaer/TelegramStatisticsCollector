@@ -1,11 +1,13 @@
 
 # Telegram Statistics Collector
 
-A set of Python scripts that collect and analyze statistics from Telegram group messages. The project consists of two scripts:
+A set of Python scripts that collects, analyzes and visualizes statistics from Telegram group messages. The project consists of 3 scripts:
 
 - `collect_data.py`: Fetches messages from a specified Telegram group, lookes for keywords and stores various statistics about the messages and their senders in JSON files and a SQLite database. Statistics and keywords are configurable.
 
 - `get_all_words.py`: Fecthes messages from a specified Telegram group and stores all words found into 4 `.json` files. (case sensitive / insensitive; sorted alphabetically / by frequency)
+
+- `wordcloud-extension/create_wordclouds.py`: Converts the `.json` files that are obtained from `collect_data.py` to word clouds. See [wordclouds extension](#extra-funtionality-wordclouds-experimental)
 
 ## Installation
 
@@ -134,7 +136,7 @@ A set of Python scripts that collect and analyze statistics from Telegram group 
       - and `'data/all_words_case_insensitive_alpha.json'`.
 
 ## Extra Funtionality: Wordclouds (experimental)
-You can convert the json data you obtained to nice word clouds, more info can be found in [wordcloud.md](word-cloud/wordcloud.md)
+You can convert the json data you obtained to nice word clouds, more info can be found in [wordcloud.md](wordcloud-extension/wordcloud.md)
 
 ## Disclaimer
 

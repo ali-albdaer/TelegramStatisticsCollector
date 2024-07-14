@@ -4,6 +4,7 @@
 __pycache__
 data
 temp
+wordclouds
 config.py
 phrases.py
 explicit.py
