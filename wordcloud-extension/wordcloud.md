@@ -33,12 +33,25 @@ pip install -r requirements.txt
         by manually moving the `.json` files to this directory.
 
 2. **You can ptionally configure these other parameters:**
+2. **You can ptionally configure these other parameters:**
 
     ```python
     BACKGROUND_COLOR = "white"
     COLOR_MODE = "RGB"
 
+    BACKGROUND_COLOR = "white"
+    COLOR_MODE = "RGB"
+
     SIZE = (800, 600)
+    FRAME_SIZE = (950, 750)
+
+    WORD_COUNT = 100
+    CATEGORY_WORD_COUNT = 100
+
+    FRAME_DURATION = 3000
+    LOOPS = 1
+
+    # See word-cloud/config.example.py for the full list of parameters
     FRAME_SIZE = (950, 750)
 
     WORD_COUNT = 100
