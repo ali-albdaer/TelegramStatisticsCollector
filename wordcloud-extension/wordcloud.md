@@ -32,8 +32,7 @@ pip install -r requirements.txt
         - Depending on where you want to run the script from, you may want to specify the path as `user_stats.json` / `global_stats.json`,
         by manually moving the `.json` files to this directory.
 
-2. **You can ptionally configure these other parameters:**
-2. **You can ptionally configure these other parameters:**
+2. **You can optionally configure these other parameters:**
 
     ```python
     BACKGROUND_COLOR = "white"
