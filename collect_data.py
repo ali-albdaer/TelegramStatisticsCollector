@@ -327,7 +327,7 @@ def save_user_stats(user_stats: dict):
                 'curse_count': user.curse_count,
                 'naughtiness': user.naughtiness,
                 'top_active_days': dict(user.daily_message_counter.most_common(USER_ACTIVE_DAYS_LIMIT)),
-                'top_category_words': {k: dict(v.most_common(USER_CATEGORY_LIMIT)) for k, v in user.category_words.items()},
+                'top_categories': {k: dict(v.most_common(USER_CATEGORY_LIMIT)) for k, v in user.category_words.items()},
                 'top_reactions_given': dict(user.reactions_given.most_common(USER_REACTION_LIMIT)),
                 'top_reactions_received': dict(user.reactions_received.most_common(USER_REACTION_LIMIT)),
                 'top_words': dict(user.word_counter.most_common(USER_WORD_LIMIT))
@@ -361,7 +361,7 @@ def save_user_stats(user_stats: dict):
             top_words TEXT,
             top_reactions_given TEXT,
             top_reactions_received TEXT,
-            top_category_words TEXT
+            top_categories TEXT
         )
     ''')
 
