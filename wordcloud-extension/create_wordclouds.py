@@ -96,5 +96,13 @@ if __name__ == "__main__":
     if id:
         stats = {str(id): stats}
 
+    processed_users = 0
+    total_users = len(stats) or 1
+
     for id, user_data in stats.items():
         process_user_data(user_data)
+
+        processed_users += 1
+        print(f"Processed Users: [{processed_users}/{total_users}]", end="\r")
+    
+    print("[ Program Finished. ] ")
