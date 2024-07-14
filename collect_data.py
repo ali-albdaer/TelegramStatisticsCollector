@@ -43,7 +43,6 @@ class User:
         self.curse_count = 0  # Number of curse words used by the user.
         self.reactions_given_count = 0
         self.reactions_received_count = 0
-        self.messages = dict()  # All messages sent by the user.
         self.word_counter = Counter()  # All words used by the user.
         self.daily_message_counter = Counter()  # Number of messages sent per day.
         self.category_words = defaultdict(Counter)  # Keywords and phrases.
@@ -52,10 +51,8 @@ class User:
         self.total_string = ''  # All messages concatenated.
 
     def calculate_ratios(self):
-        self.curse_count = sum(self.category_words.get('curses', Counter()).values())
         self.reactions_given_count = sum(self.reactions_given.values())
         self.reactions_received_count = sum(self.reactions_received.values())
-        self.message_count = len(self.messages)
 
         self.activeness = self.message_count / USER_ACTIVE_DAYS_LIMIT if USER_ACTIVE_DAYS_LIMIT else 0
         self.media_ratio = (self.media_count * 100) / self.message_count if self.message_count else 0
@@ -92,12 +89,16 @@ def analyze_message(user: User, global_stats: dict):
                     
                 global_stats['top_categories'][category][primary_key] += count
                 user.category_words[category][primary_key] += count
-    
+
+                if category == 'curses':
+                    user.curse_count += count
+                    global_stats['curse_count'] += count
+
     
 def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     sender_id = message.sender_id
     user = user_stats[sender_id]
-    user.messages[message.id] = message
+    user.message_count += 1
 
     if not user.name:
         if message.sender:
@@ -115,6 +116,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
 
     if message.media:
         user.media_count += 1
+        global_stats['media_count'] += 1
 
     # Collect reactions.
     if COUNT_REACTIONS and message.reactions and message.reactions.recent_reactions:
@@ -130,6 +132,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
 
             user.reactions_received[reaction.reaction.emoticon] += 1
             global_stats['top_reactions'][reaction.reaction.emoticon] += 1
+            global_stats['reaction_count'] += 1
 
     if not message.text:
         return
@@ -140,9 +143,9 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     else:
         text = message.text.encode('utf-8', errors='replace').decode('utf-8')
 
-
     if text.isupper():
         user.loud_message_count += 1
+        global_stats['loud_message_count'] += 1
 
     if GET_CHANNEL_LOG: # Logging is done before processing the text.
         if SHOW_DATE:
@@ -174,7 +177,6 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
         text = re.sub(pattern, name, text)
 
     words = [word for word in re.findall(r'\b\w+\b', text) if len(word) >= MIN_WORD_LENGTH]
-
     word_count = len(words)
     letter_count = sum(len(word) for word in words)
 
@@ -202,12 +204,19 @@ async def collect_stats():
         await telegram_client.sign_in(telegram_phone, input('Enter the code you received on Telegram: '))
 
     group_entity = await telegram_client.get_entity(telegram_group_id)
+    telegram_group_name = group_entity.title if group_entity.title else 'Unknown Group'
 
     user_stats = {}
     global_stats = {
+        'id': telegram_group_id,
+        'name': telegram_group_name,
         'message_count': 0,
         'word_count': 0,
         'letter_count': 0,
+        'media_count': 0,
+        'loud_message_count': 0,
+        'curse_count': 0,
+        'reaction_count': 0,
         'top_words': Counter(),
         'active_users': dict(),
         'media_users': dict(),
@@ -288,9 +297,15 @@ def save_global_stats(global_stats: dict):
     limited_top_cursing_users = sorted(global_stats['cursing_users'].items(), key=lambda x: x[1].naughtiness if GLOBAL_RANKING_BY_RATIO else x[1].curse_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
 
     json_global_stats = {
+        'id': global_stats['id'],
+        'name': global_stats['name'],
         'message_count': global_stats['message_count'],
         'word_count': global_stats['word_count'],
         'letter_count': global_stats['letter_count'],
+        'media_count': global_stats['media_count'],
+        'loud_messages_count': global_stats['loud_message_count'],
+        'curse_count': global_stats['curse_count'],
+        'reaction_count': global_stats['reaction_count'],
         'top_active_users': {user_id: {'name': user.name, 'activeness': user.activeness, 'message_count': user.message_count, 'word_count': user.word_count, 'letter_count': user.letter_count} for user_id, user in limited_top_active_users},
         'top_loud_users': {user_id: {'name': user.name, 'loudness': user.loudness, 'loud_message_count': user.loud_message_count} for user_id, user in limited_top_loud_users},
         'top_media_users': {user_id: {'name': user.name, 'media_ratio': user.media_ratio, 'media_count': user.media_count} for user_id, user in limited_top_media_users},
@@ -310,7 +325,7 @@ def save_user_stats(user_stats: dict):
     with open(user_stats_json, 'w', encoding='utf-8') as file:
         limited_user_stats = {
             user_id: {
-                'user_id': user.user_id,
+                'id': user.user_id,
                 'name': user.name,
                 'message_count': user.message_count,
                 'word_count': user.word_count,
