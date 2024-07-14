@@ -15,10 +15,10 @@ pip install -r requirements.txt
 
 1. **Create a `config.py` file in this `(word-cloud)` directory and provide the following data (see `config.example.py`):**
 
-   ```python
-   # word-cloud/config.py
-
-   ```
+    ```python
+    # word-cloud/config.py
+    ...
+    ```
 
 
 2. **Choose the paths for the output files:**
@@ -47,6 +47,10 @@ pip install -r requirements.txt
 
     In the `output_folder` directory, a folder for each user and one folder for the global statistics will be generated.
     Each folder contains 3 sub-folders:
-        - ``: 
-        - ``: 
-        - ``: 
+        - `top_words`: Contains 2 wordclouds in PNG format, with and without including common words.
+        - `categories_gif`: Contains a GIF file where each frame has words from different categories. 
+        - `categories_png`: Contains the frames of the GIF above in PNG format, can be optionally removed in `config.py`
+
+## Contributing
+
+This part of the project also welcomes contributions.
