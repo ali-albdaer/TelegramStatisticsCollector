@@ -132,6 +132,9 @@ A set of Python scripts that collect and analyze statistics from Telegram group 
       - `'data/all_words_case_insensitive_freq.json'`,
       - and `'data/all_words_case_insensitive_alpha.json'`.
 
+## Extra Funtionality: Wordclouds (experimental)
+You can convert the json data you obtained to nice word clouds, more info can be found in [wordcloud.md](word-cloud/wordcloud.md)
+
 ## Disclaimer
 This project was created for fun and educational purposes. Please use it responsibly and ethically. I do not support any malicious use of this script, including but not limited to:
 
