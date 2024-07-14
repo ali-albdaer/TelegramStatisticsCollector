@@ -13,26 +13,41 @@ pip install -r requirements.txt
 
 ## Configuration
 
-1. **Create a `config.py` file in this `(word-cloud)` directory and provide the following data (see `config.example.py`):**
+1. **Create a `config.py` file in this `(word-cloud)` directory and specify the path for the json file (see `word-cloud/config.example.py`):**
 
     ```python
     # word-cloud/config.py
-    ...
+    json_file = "user_stats.json"
+    GLOBAL_STATS = False
     ```
 
-
-2. **Choose the paths for the output files:**
+    - If you want to create a wordcloud for the `global_stats.json`, set `GLOBAL_STATS` to `True`.
+    - This is needed since the json structures of `users` and `global` are different.
 
     ```python
-    global_stats_file = ''
-    user_stats_file = ''
+    # word-cloud/config.py
+    json_file = "global_stats.json"
+    GLOBAL_STATS = True
     ```
 
+    Note: Depending on where you are running the script from, you may want to manually move the `.json` files to this directory for easier usage.
 
-3. **Optionally configure the following parameters:**
+2. **You can ptionally configure these other parameters:**
 
     ```python
+    BACKGROUND_COLOR = "white"
+    COLOR_MODE = "RGB"
+
     SIZE = (800, 600)
+    FRAME_SIZE = (950, 750)
+
+    WORD_COUNT = 100
+    CATEGORY_WORD_COUNT = 100
+
+    FRAME_DURATION = 3000
+    LOOPS = 1
+
+    # See word-cloud/config.example.py for the full list of parameters
     ```
 
 ## Usage
