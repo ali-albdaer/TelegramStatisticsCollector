@@ -3,18 +3,21 @@ import shutil
 import json
 import re
 import wordcloud
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 from config import *
 
 
 def create_wordcloud(words, title, filepath, max_words=WORD_COUNT):
+    mask = np.array(Image.open(MASK)) if MASK else None
     wc = wordcloud.WordCloud(
         width=SIZE[0], height=SIZE[1],
         min_font_size=MIN_FONT_SIZE,
         background_color=BACKGROUND_COLOR,
         max_words=max_words,
-        colormap=COLOR_MAP()
+        colormap=COLOR_MAP(),
+        mask=mask,
     ).generate_from_frequencies(words, max_font_size=MAX_FONT_SIZE)
     
     image = Image.new(COLOR_MODE, FRAME_SIZE, color=BACKGROUND_COLOR)
