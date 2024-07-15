@@ -232,13 +232,11 @@ async def collect_stats():
     processed_messages = 0
 
     async for message in telegram_client.iter_messages(group_entity):
-        if not message.sender_id:  # Skip system messages.
-            continue
+        if message.sender_id:  # Skip system messages.
+            if message.sender_id not in user_stats:
+                user_stats[message.sender_id] = User(message.sender_id)
 
-        if message.sender_id not in user_stats:
-            user_stats[message.sender_id] = User(message.sender_id)
-
-        fetch_message_stats(message, user_stats, global_stats)
+            fetch_message_stats(message, user_stats, global_stats)
 
         processed_messages += 1
         if SHOW_PROGRESS_BAR:

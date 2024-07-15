@@ -33,7 +33,7 @@ def create_wordcloud(words, title, filepath, max_words=WORD_COUNT):
 
 def process_user_data(user_data):
     id = str(user_data["id"])
-    user_name = user_data["name"].lower().replace(" ", "_")
+    user_name = user_data["name"].encode("ascii", "ignore").decode("ascii").replace(" ", "_").lower()
     user_folder = os.path.join(output_folder, user_name) + f"_{id}"
     
     # Create necessary directories
