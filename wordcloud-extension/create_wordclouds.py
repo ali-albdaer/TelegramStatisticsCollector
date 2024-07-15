@@ -1,6 +1,7 @@
 import os
 import shutil
 import json
+import re
 import wordcloud
 from PIL import Image, ImageDraw, ImageFont
 
@@ -26,15 +27,24 @@ def create_wordcloud(words, title, filepath, max_words=WORD_COUNT):
         font = ImageFont.truetype("arial.ttf", 36)
         bbox = draw.textbbox((0, 0), title, font=font)
         text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
-        draw.text(((FRAME_SIZE[0] - text_width) / 2, 20), title, font=font, fill="black")
+        draw.text(((FRAME_SIZE[0] - text_width) / 2, 20), title, font=font, fill=FONT_COLOR)
     
     image.save(filepath)
 
 
 def process_user_data(user_data):
     id = str(user_data["id"])
-    user_name = user_data["name"].encode("ascii", "ignore").decode("ascii").replace(" ", "_").lower()
-    user_folder = os.path.join(output_folder, user_name) + f"_{id}"
+    user_name = user_data["name"]
+
+    if REMOVE_ACCENTS_IN_WORDS:
+        user_data = {key: {word.translate(str.maketrans(ACCENTED_CHARS)) if isinstance(word, str) else word: count for word, count in data.items()} for key, data in user_data.items()}
+
+    if REMOVE_ACCENTS_IN_FILENAMES:
+        for letter, accents in ACCENTED_CHARS.items():
+            user_name = re.sub(f'[{accents}]', letter, user_name)
+
+    user_name = user_name.replace(" ", "_").lower() + (f"_{id}" if IDS_IN_FILENAMES else "")
+    user_folder = os.path.join(output_folder, user_name) 
     
     # Create necessary directories
     os.makedirs(user_folder, exist_ok=True)
@@ -89,7 +99,7 @@ def process_user_data(user_data):
         
 
 if __name__ == "__main__":
-    with open(json_file, "r") as f:
+    with open(json_file, "r", encoding="utf-8") as f:
         stats = json.load(f)
 
     id = stats.get("id", None)
