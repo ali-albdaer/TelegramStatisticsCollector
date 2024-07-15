@@ -31,8 +31,14 @@ def create_wordcloud(words, title, filepath, max_words=WORD_COUNT):
         text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
         draw.text(((FRAME_SIZE[0] - text_width) / 2, 20), title, font=font, fill=FONT_COLOR)
     
-    image.save(filepath)
+    if INCREASE_FILE_INDEX:
+        base_name, ext = os.path.splitext(filepath)
+        index = 1
+        while os.path.exists(filepath):
+            filepath = generate_filename(base_name, index, ext)
+            index += 1
 
+    image.save(filepath)
 
 def process_user_data(user_data):
     id = str(user_data["id"])
@@ -51,19 +57,30 @@ def process_user_data(user_data):
     # Create necessary directories
     os.makedirs(user_folder, exist_ok=True)
     top_words_folder = os.path.join(user_folder, word_data)
-    categories_png_folder = os.path.join(user_folder, "categories_png")
     categories_gif_folder = os.path.join(user_folder, "categories_gif")
     
     os.makedirs(top_words_folder, exist_ok=True)
-    os.makedirs(categories_png_folder, exist_ok=True)
     os.makedirs(categories_gif_folder, exist_ok=True)
+
+    if os.path.exists(os.path.join(user_folder, "categories_png")):
+        index = 1
+        while os.path.exists(os.path.join(user_folder, f"categories_png_{index}")):
+            index += 1
+        
+        categories_png_folder = os.path.join(user_folder, f"categories_png_{index}")
+
+    else:
+        categories_png_folder = os.path.join(user_folder, "categories_png") 
+
+    os.makedirs(categories_png_folder, exist_ok=True)
     
     top_words = {word: count for word, count in user_data[word_data].items()}
     filtered_words = {word: count for word, count in top_words.items() if word not in common_words}
     
-    create_wordcloud(top_words, unfiltered_title_format.format(user_data['name'], WORD_COUNT), os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_words_unfiltered.png"))
-    create_wordcloud(filtered_words, filtered_title_format.format(user_data["name"], WORD_COUNT), os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_unique_words.png"))
+    create_wordcloud(top_words, unfiltered_title_format.format(user_data['name'], WORD_COUNT), os.path.join(top_words_folder, generate_filename(f"{user_name}_top_{WORD_COUNT}_words_unfiltered")))
+    create_wordcloud(filtered_words, filtered_title_format.format(user_data["name"], WORD_COUNT), os.path.join(top_words_folder, generate_filename(f"{user_name}_top_{WORD_COUNT}_unique_words")))
     
+    png_filepaths = []
     for category, words in user_data.get(category_data, {}).items():
         if category not in category_title_formats and SKIP_UNKNOWN_CATEGORIES:
             continue
@@ -75,7 +92,9 @@ def process_user_data(user_data):
             category_title = default_title_format.format(user_data['name'], category)
 
         if len(words) >= MIN_CATEGORY_WORDS:
-            create_wordcloud(words, category_title, os.path.join(categories_png_folder, f"{user_name}_top_{CATEGORY_WORD_COUNT}_words_{category}.png"), max_words=CATEGORY_WORD_COUNT)
+            png_filepath = os.path.join(categories_png_folder, generate_filename(f"{user_name}_top_{CATEGORY_WORD_COUNT}_words_{category}"))
+            create_wordcloud(words, category_title, png_filepath, max_words=CATEGORY_WORD_COUNT)
+            png_filepaths.append(png_filepath)
     
     gif_frames = []
     if SHOW_GIF_TITLE_FRAME:
@@ -87,18 +106,23 @@ def process_user_data(user_data):
         draw.text(((FRAME_SIZE[0] - text_width) / 2, (FRAME_SIZE[1] - text_height) / 2), _text, font=font, fill=FONT_COLOR)
         gif_frames.append(title_frame)
     
-    for category in category_title_formats:
-        png_filepath = os.path.join(categories_png_folder, f"{user_name}_top_{CATEGORY_WORD_COUNT}_words_{category}.png")
+    for png_filepath in png_filepaths:
         if os.path.exists(png_filepath):
             gif_frames.append(Image.open(png_filepath))
     
     if gif_frames:
-        gif_filepath = os.path.join(categories_gif_folder, f"{user_name}_top_{CATEGORY_WORD_COUNT}_words_categorized.gif")
+        gif_filepath = os.path.join(categories_gif_folder, generate_filename(f"{user_name}_top_{CATEGORY_WORD_COUNT}_words_categorized", extension=".gif"))
+        if INCREASE_FILE_INDEX:
+            base_name, ext = os.path.splitext(gif_filepath)
+            index = 1
+            while os.path.exists(gif_filepath):
+                gif_filepath = generate_filename(base_name, index, ext)
+                index += 1
         gif_frames[0].save(gif_filepath, save_all=True, append_images=gif_frames[1:], duration=FRAME_DURATION, loop=LOOPS)
 
     if not KEEP_FRAMES:
         shutil.rmtree(categories_png_folder)
-        
+
 
 if __name__ == "__main__":
     with open(json_file, "r", encoding="utf-8") as f:
