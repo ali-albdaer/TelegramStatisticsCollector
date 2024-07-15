@@ -1,6 +1,6 @@
 # Json to Word Clouds Extension
 
-This part of the project is used to convert the data obtained in `.json` format to nice word clouds, see the (examples)[wordcloud-extension/examples]
+This part of the project is used to convert the data obtained in `.json` format to nice word clouds, see the [examples](wordcloud-extension/examples)
 
 ## Installation
 
@@ -37,20 +37,9 @@ pip install -r requirements.txt
     ```python
     BACKGROUND_COLOR = "white"
     COLOR_MODE = "RGB"
-
-    BACKGROUND_COLOR = "white"
-    COLOR_MODE = "RGB"
+    MASK = "wordcloud-extension/examples/mask-example.png"
 
     SIZE = (800, 600)
-    FRAME_SIZE = (950, 750)
-
-    WORD_COUNT = 100
-    CATEGORY_WORD_COUNT = 100
-
-    FRAME_DURATION = 3000
-    LOOPS = 1
-
-    # See word-cloud/config.example.py for the full list of parameters
     FRAME_SIZE = (950, 750)
 
     WORD_COUNT = 100
