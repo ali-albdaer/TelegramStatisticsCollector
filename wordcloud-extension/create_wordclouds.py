@@ -11,12 +11,11 @@ from config import *
 def create_wordcloud(words, title, filepath, max_words=WORD_COUNT):
     wc = wordcloud.WordCloud(
         width=SIZE[0], height=SIZE[1],
-        max_font_size=MAX_FONT_SIZE,
         min_font_size=MIN_FONT_SIZE,
         background_color=BACKGROUND_COLOR,
         max_words=max_words,
         colormap=COLOR_MAP()
-    ).generate_from_frequencies(words)
+    ).generate_from_frequencies(words, max_font_size=MAX_FONT_SIZE)
     
     image = Image.new(COLOR_MODE, FRAME_SIZE, color=BACKGROUND_COLOR)
     wc_image = wc.to_image()
@@ -59,8 +58,8 @@ def process_user_data(user_data):
     top_words = {word: count for word, count in user_data[word_data].items()}
     filtered_words = {word: count for word, count in top_words.items() if word not in common_words}
     
-    create_wordcloud(top_words, unfiltered_title_format.format(user_data['name'], WORD_COUNT), os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_words_unfiltered.png"), max_words=WORD_COUNT)
-    create_wordcloud(filtered_words, filtered_title_format.format(user_data["name"], WORD_COUNT), os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_unique_words.png"), max_words=WORD_COUNT)
+    create_wordcloud(top_words, unfiltered_title_format.format(user_data['name'], WORD_COUNT), os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_words_unfiltered.png"))
+    create_wordcloud(filtered_words, filtered_title_format.format(user_data["name"], WORD_COUNT), os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_unique_words.png"))
     
     for category, words in user_data.get(category_data, {}).items():
         if category not in category_title_formats and SKIP_UNKNOWN_CATEGORIES:
