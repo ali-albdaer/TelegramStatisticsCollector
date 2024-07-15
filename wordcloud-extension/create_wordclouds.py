@@ -96,8 +96,21 @@ if __name__ == "__main__":
     if id:
         stats = {str(id): stats}
 
+    if user_ids and GENERATE_FROM_LIST:
+        stats = {str(id): stats[str(id)] for id in user_ids if str(id) in user_ids}
+
+    elif user_ids and not GENERATE_FROM_LIST:
+        stats = {str(id): stats[str(id)] for id in stats if str(id) not in user_ids}
+
+    else:
+        pass
+
     processed_users = 0
-    total_users = len(stats) or 1
+    total_users = len(stats)
+    
+    if not total_users:
+        print("No users to process.")
+        exit()
 
     for id, user_data in stats.items():
         process_user_data(user_data)

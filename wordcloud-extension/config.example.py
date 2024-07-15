@@ -31,6 +31,9 @@ SHOW_TITLES = True  # Toggle to show/hide titles on word clouds
 SHOW_GIF_TITLE_FRAME = False  # Toggle to show/hide the title frame in the GIFs
 KEEP_FRAMES = True  # Toggle to keep the frame files used in the GIFs
 
+user_ids = []  # List of user IDs to generate word clouds for, leave empty to generate for all users
+GENERATE_FROM_LIST = False  # True: generate word clouds for users in user_ids, False: Ignore users in user_ids.
+
 default_title_format = "{0}'s Top Mentioned {1} Words"  # Default title for the word clouds, {0} will be replaced with the user's name and {1} with the number of words
 title_frame_format = "{0}'s Top {1} Words Categorized"  # Format for the title frame in the GIFs, {0} will be replaced with the user's name and {1} with the number of words
 
