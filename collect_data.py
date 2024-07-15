@@ -76,6 +76,16 @@ def analyze_message(user: User, global_stats: dict):
             else:
                 primary_key = element
                 aliases = ()
+
+            if PLURALIZE_CATEGORIES:
+                aliases += tuple(alias + 's' if not alias.endswith('s') else alias[:-1]+'ies' for alias in aliases)
+                aliases += (primary_key + 's' if not primary_key.endswith('s') else primary_key[:-1]+'ies',)
+
+                if primary_key.endswith('y'):
+                    aliases += (primary_key[:-1] + 'ies',)
+
+                elif not primary_key.endswith('s'):
+                    aliases += (primary_key + 's',)
             
             pattern = r'\b(?:{})\b'.format('|'.join([re.escape(alias) for alias in (primary_key,) + aliases]))
             count = len(re.findall(pattern, text))

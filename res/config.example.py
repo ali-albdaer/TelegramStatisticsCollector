@@ -22,6 +22,7 @@ api_hash = 'example_api_hash'  # Example Telegram API Hash, also obtained from h
 CASE_INSENSITIVE = True
 CONVERT_UNICODE = False  # Set to True to convert unicode characters to their ASCII equivalent.
 REMOVE_ACCENTS = False  # Set to True to remove accents from characters.
+PLURALIZE_CATEGORIES = False  # Set to True to count plural forms of categories as the same word.
 IGNORE_COMMON_WORDS = False  # Set to True to ignore the words found in res/phrases.py.
 IGNORE_URLS = False  # Replaces URLs with a white space ' '.
 GET_CHANNEL_LOG = True  # Set to True to get the log of the chat as a text file.
