@@ -59,8 +59,11 @@ ACCENTED_CHARS = {
     "Y": "ÝŸ"
 }
 
-default_title_format = "{0}'s Top Mentioned {1} Words"  # Default title for the word clouds, {0} will be replaced with the user's name and {1} with the number of words
-title_frame_format = "{0}'s Top {1} Words Categorized"  # Format for the title frame in the GIFs, {0} will be replaced with the user's name and {1} with the number of words
+# {0} will be replaced with the user's name, {1} with the word count
+unfiltered_title_format = "{0}'s Top {1} Words"  # Title format for the unfiltered word cloud
+filtered_title_format = "{0}'s Top Unique {1} Words"  # Title format for the filtered word cloud
+title_frame_format = "{0}'s Top {1} Words Categorized"  # Format for the title frame in the GIFs
+default_title_format = "{0}'s Top Mentioned {1} Words"  # Default title for the word clouds (if category is not in category_title_formats)
 
 category_title_formats = {  # Title formats for each category word cloud, {} will be replaced with the user's name
     "common phrases": "{}'s Top Common Phrases",
