@@ -49,8 +49,8 @@ def process_user_data(user_data):
     top_words = {word: count for word, count in user_data[word_data].items()}
     filtered_words = {word: count for word, count in top_words.items() if word not in common_words}
     
-    create_wordcloud(top_words, f"{user_data['name']}'s Top {WORD_COUNT} Words", os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_words_unfiltered.png"))
-    create_wordcloud(filtered_words, f"{user_data['name']}'s Top {WORD_COUNT} Unique Words", os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_unique_words.png"))
+    create_wordcloud(top_words, f"{user_data['name']}'s Top {WORD_COUNT} Words", os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_words_unfiltered.png"), max_words=WORD_COUNT)
+    create_wordcloud(filtered_words, f"{user_data['name']}'s Top {WORD_COUNT} Unique Words", os.path.join(top_words_folder, f"{user_name}_top_{WORD_COUNT}_unique_words.png"), max_words=WORD_COUNT)
     
     for category, words in user_data.get(category_data, {}).items():
         if category not in category_title_formats and SKIP_UNKNOWN_CATEGORIES:
@@ -72,7 +72,7 @@ def process_user_data(user_data):
         font = ImageFont.truetype("arial.ttf", 36)
         text = title_frame_format.format(user_data['name'], CATEGORY_WORD_COUNT)
         text_width, text_height = draw.textsize(text, font=font)
-        draw.text(((FRAME_SIZE[0] - text_width) / 2, (FRAME_SIZE[1] - text_height) / 2), text, font=font, fill="black")
+        draw.text(((FRAME_SIZE[0] - text_width) / 2, (FRAME_SIZE[1] - text_height) / 2), text, font=font, fill=FONT_COLOR)
         gif_frames.append(title_frame)
     
     for category in category_title_formats:
