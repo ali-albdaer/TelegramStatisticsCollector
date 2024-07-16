@@ -54,7 +54,6 @@ def process_user_data(user_data):
     user_name = user_name.replace(" ", "_").lower() + (f"_{id}" if IDS_IN_FILENAMES else "")
     user_folder = os.path.join(output_folder, user_name) 
     
-    # Create necessary directories
     os.makedirs(user_folder, exist_ok=True)
     top_words_folder = os.path.join(user_folder, word_data)
     categories_gif_folder = os.path.join(user_folder, "categories_gif")
