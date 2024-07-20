@@ -12,6 +12,7 @@ Hmm...
 
 - [] Handle DepricatedWarning.
 - [] Total messages, words, letters and media visualization (table?).
+- [] Option to generate graphs for all categories.
 - [] Visualization ideas for naughtiness and loudness.
 - [] Visualization ideas for reactions.
 - [] Add assertion checks.
