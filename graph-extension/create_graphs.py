@@ -89,7 +89,7 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
     )
     
     # Save the animation as a GIF
-    gif_path = f"{animations_folder}/activity_time.gif"
+    gif_path = os.path.join(animations_folder, "activity_time.gif")
     ani.save(gif_path, writer='pillow')
     plt.close(fig)
 
@@ -109,6 +109,10 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
         labels, counts = zip(*sorted_category_data)
         labels, counts = list(labels)[::-1], list(counts)[::-1]
 
+        # Path for saving category histogram animations
+        category_animations_folder = os.path.join(animations_folder, "category_histograms")
+        os.makedirs(category_animations_folder, exist_ok=True)
+        
         fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
         fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
 
@@ -152,11 +156,14 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
             interval=PARAMETERS['CATEGORY_ANIMATION_SPEED']
         )
 
-        gif_path = f"{animations_folder}/category_histogram_{category}.gif"
+        gif_path = os.path.join(category_animations_folder, f"{category}.gif")
         ani.save(gif_path, writer='pillow')
         plt.close(fig)
 
         # Save the last frame as PNG in static_graphs
+        category_static_graphs_folder = os.path.join(static_graphs_folder, "category_histograms")
+        os.makedirs(category_static_graphs_folder, exist_ok=True)
+
         fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
         fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
 
@@ -181,7 +188,7 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
             ax.set_ylim(PARAMETERS['CATEGORY_Y_LIMIT'])
 
         bars = ax.bar(labels, counts, color=[plt.cm.get_cmap('RdYlGn_r')(count / max(counts)) for count in counts])
-        png_path = f"{static_graphs_folder}/category_histogram_{category}.png"
+        png_path = os.path.join(category_static_graphs_folder, f"{category}.png")
         fig.savefig(png_path)
         plt.close(fig)
 
@@ -202,12 +209,12 @@ def generate_data(user_stats):
             os.makedirs(user_folder)
         
         # Create animations folder
-        animations_folder = f"{user_folder}/animations"
+        animations_folder = os.path.join(user_folder, "animations")
         if not os.path.exists(animations_folder):
             os.makedirs(animations_folder)
         
         # Create static graphs folder
-        static_graphs_folder = f"{user_folder}/static_graphs"
+        static_graphs_folder = os.path.join(user_folder, "static_graphs")
         if not os.path.exists(static_graphs_folder):
             os.makedirs(static_graphs_folder)
         
