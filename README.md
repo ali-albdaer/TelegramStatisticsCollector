@@ -124,19 +124,21 @@ A set of Python scripts that collects, analyzes and visualizes statistics from T
    Either script will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. Simply type the code you receive from Telegram in the terminal.
 
 2. **View the data:**
+
    `collect_data.py`: the statistics will be saved in:
       - `data/global_stats.json`,
       - `data/user_stats.json`,
       - and `data/user_stats.db`.
 
    `get_all_words.py`: the words will be saved in:
-      - `'data/all_words_case_sensitive_freq.json'`, 
-      - `'data/all_words_case_sensitive_alpha.json'`,
-      - `'data/all_words_case_insensitive_freq.json'`,
-      - and `'data/all_words_case_insensitive_alpha.json'`.
+      - `data/all_words_case_sensitive_freq.json`, 
+      - `data/all_words_case_sensitive_alpha.json`,
+      - `data/all_words_case_insensitive_freq.json`,
+      - and `data/all_words_case_insensitive_alpha.json`.
 
-## Extra Funtionality: Wordclouds (experimental)
-You can convert the json data you obtained to nice word clouds, more info can be found in [wordcloud.md](wordcloud-extension/wordcloud.md)
+## Visualizing The Data (experimental)
+- The data you obtained can be used to generate to nice word clouds, check [wordclouds.md](wordcloud-extension/wordcloud.md)
+- To create activity graphs and animations using the data you obtained, check [coming-soon](#visualizing-the-data-experimental)
 
 ## Disclaimer
 

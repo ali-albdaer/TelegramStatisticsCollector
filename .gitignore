@@ -4,6 +4,7 @@
 __pycache__
 data
 temp
+graphs
 wordclouds
 graphs
 config.py
