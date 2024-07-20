@@ -137,7 +137,7 @@ A set of Python scripts that collects, analyzes and visualizes statistics from T
       - and `data/all_words_case_insensitive_alpha.json`.
 
 ## Visualizing The Data (experimental)
-- The data you obtained can be used to generate to nice word clouds, check [wordclouds.md](wordcloud-extension/wordcloud.md)
+- The data you obtained can be used to generate to nice word clouds, check [wordclouds.md](wordcloud-extension/wordclouds.md)
 - To create activity graphs and animations using the data you obtained, check [coming-soon](#visualizing-the-data-experimental)
 
 ## Disclaimer
