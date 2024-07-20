@@ -32,7 +32,7 @@ PARAMETERS = {
     'CATEGORY_Y_LABEL': 'Counts',
     'CATEGORY_DYNAMIC_PARAMETERS': True,
     'CATEGORY_TITLE': '{name}\'s Top Mentioned {category_name} (ID: {id})',  # Title of the category histogram. All vars are optional.
-    'CATEGORY_GLOBAL_LIMIT': 10,  # New global limit parameter
+    'CATEGORY_GLOBAL_LIMIT': 10,  # Default limit of bars per category. 
     'CATEGORIES': {  # Limit of bars per category. Set to -1 to use the CATEGORY_GLOBAL_LIMIT.
         'common phrases': 10,
         'countries': 5,
