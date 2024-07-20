@@ -4,8 +4,8 @@
 __pycache__
 data
 temp
-graphs
 wordclouds
+graphs
 config.py
 phrases.py
 explicit.py
