@@ -41,7 +41,7 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
     # Set the limits and labels
     if PARAMETERS['ACTIVITY_DYNAMIC_PARAMETERS']:
         ax.set_xlim(0, len(date_list))
-        ax.set_ylim(0, max(message_counts) + 10)
+        ax.set_ylim(0, int(max(message_counts) * 1.05))
         ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
         ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
 
