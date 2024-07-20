@@ -123,7 +123,7 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
 
         ax.set_xlabel(PARAMETERS['CATEGORY_X_LABEL'])
         ax.set_ylabel(PARAMETERS['CATEGORY_Y_LABEL'])
-        ax.set_title(PARAMETERS['CATEGORY_TITLE'].format(name=user_data['name'], id=user_id))
+        ax.set_title(PARAMETERS['CATEGORY_TITLE'].format(name=user_data['name'], id=user_id, category_name=category))
 
         if PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS']:
             ax.set_xlim(-0.5, len(labels) - 0.5)
@@ -171,7 +171,7 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
 
         ax.set_xlabel(PARAMETERS['CATEGORY_X_LABEL'])
         ax.set_ylabel(PARAMETERS['CATEGORY_Y_LABEL'])
-        ax.set_title(PARAMETERS['CATEGORY_TITLE'].format(name=user_data['name'], id=user_id))
+        ax.set_title(PARAMETERS['CATEGORY_TITLE'].format(name=user_data['name'], id=user_id, category_name=category))
 
         if PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS']:
             ax.set_xlim(-0.5, len(labels) - 0.5)
