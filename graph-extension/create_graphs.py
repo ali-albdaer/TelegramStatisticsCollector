@@ -148,7 +148,7 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
                 current_height = min(frame, counts[i])
                 bar.set_height(current_height)
                 color_value = current_height / max(counts)
-                bar.set_color(plt.cm.get_cmap('RdYlGn_r')(color_value))
+                bar.set_color(plt.get_cmap('RdYlGn_r')(color_value))
             return bars,
 
         ani = animation.FuncAnimation(
@@ -187,7 +187,7 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
             ax.set_xlim(PARAMETERS['CATEGORY_X_LIMIT'])
             ax.set_ylim(PARAMETERS['CATEGORY_Y_LIMIT'])
 
-        bars = ax.bar(labels, counts, color=[plt.cm.get_cmap('RdYlGn_r')(count / max(counts)) for count in counts])
+        bars = ax.bar(labels, counts, color=[plt.get_cmap('RdYlGn_r')(count / max(counts)) for count in counts])
         png_path = os.path.join(category_static_graphs_folder, f"{category}.png")
         fig.savefig(png_path)
         plt.close(fig)
