@@ -25,4 +25,20 @@ PARAMETERS = {
     'ACTIVITY_Y_LIMIT': None,
     'ACTIVITY_X_INTERVAL': None,
     'ACTIVITY_Y_INTERVAL': None,
+
+    # Params for the category histograms
+    'CATEGORY_ANIMATION_SPEED': 100,
+    'CATEGORY_X_LABEL': 'Categories',
+    'CATEGORY_Y_LABEL': 'Counts',
+    'CATEGORY_DYNAMIC_PARAMETERS': True,
+    'CATEGORY_TITLE': 'Category Distribution for {name}',
+    'CATEGORY_GLOBAL_LIMIT': 10,  # New global limit parameter
+    'CATEGORIES': {  # Limit of bars per category. Set to -1 to use the CATEGORY_GLOBAL_LIMIT.
+        'common phrases': 10,
+        'countries': 5,
+        'languages': 5,
+        'sports': -1,
+        'colors': 6,
+        'famous people': 15
+    }
 }

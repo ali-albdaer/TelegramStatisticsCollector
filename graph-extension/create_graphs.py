@@ -211,8 +211,9 @@ def generate_data(user_stats):
         if not os.path.exists(static_graphs_folder):
             os.makedirs(static_graphs_folder)
         
-        #create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
+        create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
         create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder)
+
 
 if __name__ == '__main__':
     os.makedirs(output_folder, exist_ok=True)
