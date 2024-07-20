@@ -19,6 +19,7 @@ Hmm...
 - [] Add `global_stats.json` support.
 - [] Combine all gifs into one.
 - [] Add loops parameter for gifs.
+- [] Re-use gif script for pngs.
 - [] Write graphs.md & mention it in README.md.
 - [] Merge into master.
 
