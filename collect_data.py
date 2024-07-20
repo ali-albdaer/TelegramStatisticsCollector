@@ -13,7 +13,11 @@ from res.phrases import category_sets, ignored_words
 
 
 if CONVERT_UNICODE:
-    from unidecode import unidecode
+    try:
+        from unidecode import unidecode
+    except ImportError:
+        print('Please install the unidecode module to use the CONVERT_UNICODE option.\nRun: pip install unidecode')
+        exit(1)
 
 
 logging.basicConfig(level=logging.INFO)
