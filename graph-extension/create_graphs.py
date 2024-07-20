@@ -99,15 +99,15 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
     
     for category, limit in categories_dict.items():
         category_data = user_data['top_categories'].get(category, {})
+
         if not category_data:
             continue
 
-        # Use category-specific limit or global limit if set to -1
         entry_limit = limit if limit != -1 else global_limit
 
         sorted_category_data = sorted(category_data.items(), key=lambda x: x[1], reverse=True)[:entry_limit]
         labels, counts = zip(*sorted_category_data)
-        labels, counts = list(labels)[::-1], list(counts)[::-1]  # Reverse the order
+        labels, counts = list(labels)[::-1], list(counts)[::-1]
 
         fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
         fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
