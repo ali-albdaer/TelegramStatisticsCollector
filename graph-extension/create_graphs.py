@@ -93,6 +93,97 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
     ani.save(gif_path, writer='pillow')
     plt.close(fig)
 
+def create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder):
+    categories_dict = PARAMETERS['CATEGORIES']
+    global_limit = PARAMETERS['CATEGORY_GLOBAL_LIMIT']
+    
+    for category, limit in categories_dict.items():
+        category_data = user_data['top_categories'].get(category, {})
+        if not category_data:
+            continue
+
+        # Use category-specific limit or global limit if set to -1
+        entry_limit = limit if limit != -1 else global_limit
+
+        sorted_category_data = sorted(category_data.items(), key=lambda x: x[1], reverse=True)[:entry_limit]
+        labels, counts = zip(*sorted_category_data)
+        labels, counts = list(labels)[::-1], list(counts)[::-1]  # Reverse the order
+
+        fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
+        fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
+
+        ax.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
+        ax.spines['bottom'].set_color(PARAMETERS['AXIS_COLOR'])
+        ax.spines['left'].set_color(PARAMETERS['AXIS_COLOR'])
+        ax.tick_params(axis='x', colors=PARAMETERS['AXIS_COLOR'])
+        ax.tick_params(axis='y', colors=PARAMETERS['AXIS_COLOR'])
+        ax.yaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
+        ax.xaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
+        ax.title.set_color(PARAMETERS['TEXT_COLOR'])
+
+        ax.set_xlabel(PARAMETERS['CATEGORY_X_LABEL'])
+        ax.set_ylabel(PARAMETERS['CATEGORY_Y_LABEL'])
+        ax.set_title(PARAMETERS['CATEGORY_TITLE'].format(name=user_data['name'], id=user_id))
+
+        if PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS']:
+            ax.set_xlim(-0.5, len(labels) - 0.5)
+            ax.set_ylim(0, max(counts) + 10)
+        else:
+            ax.set_xlim(PARAMETERS['CATEGORY_X_LIMIT'])
+            ax.set_ylim(PARAMETERS['CATEGORY_Y_LIMIT'])
+
+        bars = ax.bar(labels, [0] * len(labels), color='green')
+
+        def init():
+            for bar in bars:
+                bar.set_height(0)
+            return bars,
+
+        def update(frame):
+            for i, bar in enumerate(bars):
+                current_height = min(frame, counts[i])
+                bar.set_height(current_height)
+                color_value = current_height / max(counts)
+                bar.set_color(plt.cm.get_cmap('RdYlGn_r')(color_value))
+            return bars,
+
+        ani = animation.FuncAnimation(
+            fig, update, frames=max(counts) + 1, init_func=init,
+            interval=PARAMETERS['CATEGORY_ANIMATION_SPEED']
+        )
+
+        gif_path = f"{animations_folder}/category_histogram_{category}.gif"
+        ani.save(gif_path, writer='pillow')
+        plt.close(fig)
+
+        # Save the last frame as PNG in static_graphs
+        fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
+        fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
+
+        ax.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
+        ax.spines['bottom'].set_color(PARAMETERS['AXIS_COLOR'])
+        ax.spines['left'].set_color(PARAMETERS['AXIS_COLOR'])
+        ax.tick_params(axis='x', colors=PARAMETERS['AXIS_COLOR'])
+        ax.tick_params(axis='y', colors=PARAMETERS['AXIS_COLOR'])
+        ax.yaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
+        ax.xaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
+        ax.title.set_color(PARAMETERS['TEXT_COLOR'])
+
+        ax.set_xlabel(PARAMETERS['CATEGORY_X_LABEL'])
+        ax.set_ylabel(PARAMETERS['CATEGORY_Y_LABEL'])
+        ax.set_title(PARAMETERS['CATEGORY_TITLE'].format(name=user_data['name'], id=user_id))
+
+        if PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS']:
+            ax.set_xlim(-0.5, len(labels) - 0.5)
+            ax.set_ylim(0, max(counts) + 10)
+        else:
+            ax.set_xlim(PARAMETERS['CATEGORY_X_LIMIT'])
+            ax.set_ylim(PARAMETERS['CATEGORY_Y_LIMIT'])
+
+        bars = ax.bar(labels, counts, color=[plt.cm.get_cmap('RdYlGn_r')(count / max(counts)) for count in counts])
+        png_path = f"{static_graphs_folder}/category_histogram_{category}.png"
+        fig.savefig(png_path)
+        plt.close(fig)
 
 def generate_data(user_stats):
     user_ids = GENERATE_FROM_LIST if GENERATE_FROM_LIST else user_stats.keys()
@@ -115,8 +206,13 @@ def generate_data(user_stats):
         if not os.path.exists(animations_folder):
             os.makedirs(animations_folder)
         
-        create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
-
+        # Create static graphs folder
+        static_graphs_folder = f"{user_folder}/static_graphs"
+        if not os.path.exists(static_graphs_folder):
+            os.makedirs(static_graphs_folder)
+        
+        #create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
+        create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder)
 
 if __name__ == '__main__':
     os.makedirs(output_folder, exist_ok=True)
