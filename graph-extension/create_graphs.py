@@ -89,10 +89,10 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
         return line,
 
     if PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'DURATION':
-        interval = PARAMETERS['ACTIVITY_ANIMATION_DURATION'] / len(date_list)
+        interval = PARAMETERS['ACTIVITY_ANIMATION_FIXED_DURATION'] / len(date_list)
 
     elif PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'SPEED':
-        interval = PARAMETERS['ACTIVITY_ANIMATION_SPEED']
+        interval = PARAMETERS['ACTIVITY_ANIMATION_FIXED_SPEED']
 
     elif PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'AUTO':
         MIN_FRAMES = PARAMETERS['ACTIVITY_ANIMATON_MIN_FRAMES']
@@ -176,10 +176,10 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
             return bars,
     
         if PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'DURATION':
-            interval = PARAMETERS['CATEGORY_ANIMATION_DURATION'] / max(counts)
+            interval = PARAMETERS['CATEGORY_ANIMATION_FIXED_DURATION'] / max(counts)
 
         elif PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'SPEED':
-            interval = PARAMETERS['CATEGORY_ANIMATION_SPEED']
+            interval = PARAMETERS['CATEGORY_ANIMATION_FIXED_SPEED']
 
         elif PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'AUTO':
             MIN_FRAMES = PARAMETERS['CATEGORY_ANIMATON_MIN_FRAMES']
