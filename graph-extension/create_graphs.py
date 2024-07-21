@@ -68,14 +68,16 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
 
     line, = ax.plot([], [], marker='o', color=PARAMETERS['GRAPH_COLOR'])
 
-    if PARAMETERS['ACTIVITY_SHOW_ANALYTICS']:
-        Y = 0.90
+    Y = 0.90
+    if PARAMETERS['ACTIVITY_SHOW_FIRST_MESSAGE']:
         plt.figtext(0.88, (Y:=Y-0.05), f"First Message: {start_date_dt.strftime('%Y-%m-%d')}", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
-        most_active_days = sorted(activity_data, key=activity_data.get, reverse=True)[:min(3, len(activity_data))]
+    if (N:=PARAMETERS['ACTIVITY_SHOW_TOP_ACTIVE_DAYS']):
+        most_active_days = sorted(activity_data, key=activity_data.get, reverse=True)[:min(N, len(activity_data))]
         for i, day in enumerate(most_active_days, 1):
             plt.figtext(0.88, (Y:=Y-0.05), f"#{i}: {day} ({activity_data[day]} messages)", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
+    if PARAMETERS['ACTIVITY_SHOW_RATIOS']:
         if activity_factor != -1:
             plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['activeness'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
             plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['activeness'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
