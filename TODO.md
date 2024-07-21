@@ -5,12 +5,12 @@ Hmm...
 ## Short Tasks
 
 - [] Implement .env variables.
-- [] Improve repo description and add tags.
+- [X] Improve repo description and add tags.
 - [] Mention this repo in `TelegramDiscordClone`.
 
 ## Graphs Extension
 
-- [] Handle DepricatedWarning.
+- [X] Handle DepricatedWarning.
 - [] Total messages, words, letters and media visualization (table?).
 - [] Option to generate graphs for all categories.
 - [] Visualization ideas for naughtiness and loudness.
