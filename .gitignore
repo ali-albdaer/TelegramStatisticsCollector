@@ -3,9 +3,13 @@
 *.session-journal
 __pycache__
 data
+data_dev
 temp
+temp_dev
 wordclouds
+wordclouds_dev
 graphs
+graphs_dev
 config.py
 phrases.py
 explicit.py

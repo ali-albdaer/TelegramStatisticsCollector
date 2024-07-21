@@ -1,7 +1,14 @@
 import random
 
-output_folder = "wordclouds_output"  # The folder where the word clouds will be saved
-json_file  = "data/user_stats.json"  # The JSON file containing the user stats / global stats
+development = True
+
+if development:
+    output_folder = "wordclouds_dev"
+    json_file  = "data_dev/user_stats.json"
+
+else:
+    output_folder = "wordclouds"
+    json_file  = "data/user_stats.json"
 
 word_data = "top_words"  # The key in the user data dictionary that contains the word data
 category_data = "top_categories"  # The key in the user data dictionary that contains the category data

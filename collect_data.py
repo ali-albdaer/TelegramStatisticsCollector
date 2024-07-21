@@ -23,8 +23,8 @@ if CONVERT_UNICODE:
 logging.basicConfig(level=logging.INFO)
 
 
-if not os.path.exists('data'):
-    os.makedirs('data')
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 
 if GET_CHANNEL_LOG:
