@@ -69,11 +69,16 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
     line, = ax.plot([], [], marker='o', color=PARAMETERS['GRAPH_COLOR'])
 
     if PARAMETERS['ACTIVITY_SHOW_ANALYTICS']:
-        plt.figtext(0.88, 0.85, f"First Message: {start_date_dt.strftime('%Y-%m-%d')}", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-        plt.figtext(0.88, 0.80, f"Most Active Day: {max(activity_data, key=activity_data.get)}", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-        plt.figtext(0.88, 0.75, f"Messages Sent That Day: {activity_data[max(activity_data, key=activity_data.get)]}", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-        plt.figtext(0.88, 0.70, f"Activeness: {(user_data['activeness'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-        plt.figtext(0.88, 0.65, f"Touch-Grass Rate: {100 - (user_data['activeness'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+        Y = 0.90
+        plt.figtext(0.88, (Y:=Y-0.05), f"First Message: {start_date_dt.strftime('%Y-%m-%d')}", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+
+        most_active_days = sorted(activity_data, key=activity_data.get, reverse=True)[:min(3, len(activity_data))]
+        for i, day in enumerate(most_active_days, 1):
+            plt.figtext(0.88, (Y:=Y-0.05), f"#{i}: {day} ({activity_data[day]} messages)", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+
+        if activity_factor != -1:
+            plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['activeness'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+            plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['activeness'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
     def init():
         line.set_data([], [])
@@ -233,7 +238,7 @@ def generate_data(user_stats):
     user_ids = GENERATE_FROM_LIST if GENERATE_FROM_LIST else user_stats.keys()
 
     # Calculate some global parameters
-    max_activeness = max(user_stats[user_id]['activeness'] for user_id in user_ids)
+    max_activeness = max(user_stats[user_id].get('activeness', -1) for user_id in user_ids)
     
     for user_id in user_ids:
         user_data = user_stats[user_id]
@@ -263,6 +268,10 @@ if __name__ == '__main__':
     os.makedirs(output_folder, exist_ok=True)
 
     with open(json_file, 'r') as file:
-        user_stats = json.load(file)
+        stats = json.load(file)
 
-    generate_data(user_stats)
+    id = stats.get("id", None)  # Handle global stats
+    if id:
+        stats = {str(id): stats}
+
+    generate_data(stats)
