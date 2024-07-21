@@ -1,6 +1,6 @@
 import random
 
-development = True
+development = False
 
 if development:
     output_folder = "wordclouds_dev"
