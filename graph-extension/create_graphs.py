@@ -82,11 +82,30 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
     def update(frame):
         line.set_data(date_list[:frame+1], message_counts[:frame+1])
         return line,
+
+    if PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'DURATION':
+        interval = PARAMETERS['ACTIVITY_ANIMATION_DURATION'] / len(date_list)
+
+    elif PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'SPEED':
+        interval = PARAMETERS['ACTIVITY_ANIMATION_SPEED']
+
+    elif PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'AUTO':
+        MIN_FRAMES = PARAMETERS['ACTIVITY_ANIMATON_MIN_FRAMES']
+        MAX_FRAMES = PARAMETERS['ACTIVITY_ANIMATION_MAX_FRAMES']
+        MIN_DURATION = PARAMETERS['ACTIVITY_ANIMATION_MIN_DURATION']
+        MAX_DURATION = PARAMETERS['ACTIVITY_ANIMATION_MAX_DURATION']
+
+        frame_count = len(date_list)
+        clamped_frame_count = max(MIN_FRAMES, min(MAX_FRAMES, frame_count))
+
+        total_duration = MIN_DURATION + (MAX_DURATION - MIN_DURATION) * ((clamped_frame_count - MIN_FRAMES) / (MAX_FRAMES - MIN_FRAMES))
+        interval = total_duration / frame_count
+        
+
+    else:
+        raise ValueError(f"Invalid animation mode: {PARAMETERS['ACTIVITY_ANIMATION_MODE']}")
     
-    ani = animation.FuncAnimation(
-        fig, update, frames=len(date_list), init_func=init,
-        blit=True, interval=PARAMETERS['ACTIVITY_ANIMATION_SPEED']
-    )
+    ani = animation.FuncAnimation(fig, update, frames=len(date_list), init_func=init, interval=interval, blit=True)
     
     # Save the animation as a GIF
     gif_path = os.path.join(animations_folder, "activity_time.gif")
@@ -150,11 +169,29 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
                 color_value = current_height / max(counts)
                 bar.set_color(plt.get_cmap('RdYlGn_r')(color_value))
             return bars,
+    
+        if PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'DURATION':
+            interval = PARAMETERS['CATEGORY_ANIMATION_DURATION'] / max(counts)
 
-        ani = animation.FuncAnimation(
-            fig, update, frames=max(counts) + 1, init_func=init,
-            interval=PARAMETERS['CATEGORY_ANIMATION_SPEED']
-        )
+        elif PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'SPEED':
+            interval = PARAMETERS['CATEGORY_ANIMATION_SPEED']
+
+        elif PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'AUTO':
+            MIN_FRAMES = PARAMETERS['CATEGORY_ANIMATON_MIN_FRAMES']
+            MAX_FRAMES = PARAMETERS['CATEGORY_ANIMATION_MAX_FRAMES']
+            MIN_DURATION = PARAMETERS['CATEGORY_ANIMATION_MIN_DURATION']
+            MAX_DURATION = PARAMETERS['CATEGORY_ANIMATION_MAX_DURATION']
+
+            frame_count = max(counts)
+            clamped_frame_count = max(MIN_FRAMES, min(MAX_FRAMES, frame_count))
+
+            total_duration = MIN_DURATION + (MAX_DURATION - MIN_DURATION) * ((clamped_frame_count - MIN_FRAMES) / (MAX_FRAMES - MIN_FRAMES))
+            interval = total_duration / frame_count
+
+        else:
+            raise ValueError(f"Invalid animation mode: {PARAMETERS['CATEGORY_ANIMATION_MODE']}")
+
+        ani = animation.FuncAnimation(fig, update, frames=max(counts) + 1, init_func=init, interval=interval)
 
         gif_path = os.path.join(category_animations_folder, f"{category}.gif")
         ani.save(gif_path, writer='pillow')
