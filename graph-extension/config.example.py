@@ -1,5 +1,12 @@
-output_folder = "graphs"
-json_file  = "data/user_stats.json"
+development = False
+
+if development:
+    output_folder = "graphs_dev"
+    json_file  = "data_dev/global_stats.json"
+
+else:
+    output_folder = "graphs"
+    json_file  = "data/global_stats.json"
 
 # Generate graphs for all users in the list. If the list is empty, generate graphs for all users in the json file.
 GENERATE_FROM_LIST = []
