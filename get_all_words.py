@@ -12,8 +12,8 @@ if CONVERT_UNICODE:
     from unidecode import unidecode
 
 
-if not os.path.exists('data'):
-    os.makedirs('data')
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 
 if GET_CHANNEL_LOG:
