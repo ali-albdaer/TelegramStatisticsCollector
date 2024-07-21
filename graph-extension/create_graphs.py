@@ -267,7 +267,7 @@ def generate_data(user_stats):
 if __name__ == '__main__':
     os.makedirs(output_folder, exist_ok=True)
 
-    with open(json_file, 'r') as file:
+    with open(json_file, 'r', encoding='utf-8') as file:
         stats = json.load(file)
 
     id = stats.get("id", None)  # Handle global stats
