@@ -26,9 +26,9 @@ PARAMETERS = {
     'ACTIVITY_X_INTERVAL': None,  # None or an integer with the interval for the x-axis.
     'ACTIVITY_Y_INTERVAL': None,  # None or an integer with the interval for the y-axis.
 
-    'ACTIVITY_ANIMATION_MODE': 'AUTO',  # 'DURATION' or 'SPEED' for exact time or speed between frames, 'AUTO' for a linear interpolation between the min and max values.
+    'ACTIVITY_ANIMATION_MODE': 'DURATION',  # 'DURATION' or 'SPEED' for exact time or speed between frames, 'AUTO' for a linear interpolation between the min and max values.
     'ACTIVITY_ANIMATION_FIXED_SPEED': 100,  # Time in milliseconds between each frame of the animation, ignored if mode is not 'SPEED'.
-    'ACTIVITY_ANIMATION_FIXED_DURATION': 7000,  # Time in milliseconds for the whole animation, ignored if mode is not 'DURATION'.
+    'ACTIVITY_ANIMATION_FIXED_DURATION': 10000,  # Time in milliseconds for the whole animation, ignored if mode is not 'DURATION'.
 
     # Min and max values for the animation interpolation, ignored if mode is not 'AUTO'.
     'ACTIVITY_ANIMATION_MIN_DURATION': 2000,
@@ -47,14 +47,13 @@ PARAMETERS = {
     'CATEGORY_Y_LIMIT': None,
 
     'CATEGORY_ANIMATION_MODE': 'AUTO',  # 'DURATION' or 'SPEED' or 'AUTO'
-
     'CATEGORY_ANIMATION_FIXED_SPEED': 100,
     'CATEGORY_ANIMATION_FIXED_DURATION': 4000,
 
-    'CATEGORY_ANIMATION_MIN_FRAMES': 10,
-    'CATEGORY_ANIMATION_MAX_FRAMES': 200,
     'CATEGORY_ANIMATION_MIN_DURATION': 2000,
     'CATEGORY_ANIMATION_MAX_DURATION': 10000,
+    'CATEGORY_ANIMATION_MIN_FRAMES': 10,
+    'CATEGORY_ANIMATION_MAX_FRAMES': 200,
 
     'CATEGORY_GLOBAL_LIMIT': 10,  # Default limit of bars per category. 
     'CATEGORIES': {  # Limit of bars per category. Set to -1 to use the CATEGORY_GLOBAL_LIMIT.
