@@ -23,7 +23,7 @@ PARAMETERS = {
     'ACTIVITY_TITLE': 'Activity-Time Graph for {name} (ID: {id})',
 
     'ACTIVITY_SHOW_FIRST_MESSAGE': True,  # Show the first message date on the analytics.
-    'ACTVITIY_SHOW_MOST_ACTIVE_DAY': 3,  # Amount of most active days to show on the analytics.
+    'ACTIVITY_SHOW_TOP_ACTIVE_DAYS': 3,  # Amount of most active days to show on the analytics.
     'ACTIVITY_SHOW_RATIOS': True,  # Show the ratios of messages sent by the user.
 
     'ACTIVITY_X_LABEL': "Days",

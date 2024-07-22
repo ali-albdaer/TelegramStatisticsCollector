@@ -79,7 +79,7 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
 
     if PARAMETERS['ACTIVITY_SHOW_RATIOS'] and activity_factor != -1:
         plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['activeness'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['activeness'] * 100 / activity_factor)::.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['activeness'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
     def init():
         line.set_data([], [])
