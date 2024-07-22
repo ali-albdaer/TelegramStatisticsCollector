@@ -77,10 +77,9 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
         for i, day in enumerate(most_active_days, 1):
             plt.figtext(0.88, (Y:=Y-0.05), f"#{i}: {day} ({activity_data[day]} messages)", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
-    if PARAMETERS['ACTIVITY_SHOW_RATIOS']:
-        if activity_factor != -1:
-            plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['activeness'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-            plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['activeness'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+    if PARAMETERS['ACTIVITY_SHOW_RATIOS'] and activity_factor != -1:
+        plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['activeness'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['activeness'] * 100 / activity_factor)::.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
     def init():
         line.set_data([], [])
@@ -118,6 +117,7 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
     gif_path = os.path.join(animations_folder, "activity_time.gif")
     ani.save(gif_path, writer='pillow')
     plt.close(fig)
+
 
 def create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder):
     categories_dict = PARAMETERS['CATEGORIES']
@@ -236,6 +236,10 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
         fig.savefig(png_path)
         plt.close(fig)
 
+
+def create_metrics_radar_chart(user_id, user_data, output_folder):
+    ...
+
 def generate_data(user_stats):
     user_ids = GENERATE_FROM_LIST if GENERATE_FROM_LIST else user_stats.keys()
 
@@ -252,18 +256,17 @@ def generate_data(user_stats):
         if not os.path.exists(user_folder):
             os.makedirs(user_folder)
         
-        # Create animations folder
         animations_folder = os.path.join(user_folder, "animations")
         if not os.path.exists(animations_folder):
             os.makedirs(animations_folder)
         
-        # Create static graphs folder
         static_graphs_folder = os.path.join(user_folder, "static_graphs")
         if not os.path.exists(static_graphs_folder):
             os.makedirs(static_graphs_folder)
         
         create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
         create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder)
+        create_metrics_radar_chart(user_id, user_data, static_graphs_folder)
 
 
 if __name__ == '__main__':
