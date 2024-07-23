@@ -441,15 +441,15 @@ def generate_data(user_stats):
         print(f"Generating graphs for {user_name}...")
 
         user_folder = os.path.join(output_folder, f"{user_name}_{user_id}")
-        if not os.path.exists(user_folder):
+        if SAVE_PLOTS and not os.path.exists(user_folder):
             os.makedirs(user_folder)
         
         animations_folder = os.path.join(user_folder, "animations")
-        if not os.path.exists(animations_folder):
+        if SAVE_PLOTS and not os.path.exists(animations_folder):
             os.makedirs(animations_folder)
         
         static_graphs_folder = os.path.join(user_folder, "static_graphs")
-        if not os.path.exists(static_graphs_folder):
+        if SAVE_PLOTS and not os.path.exists(static_graphs_folder):
             os.makedirs(static_graphs_folder)
         
         create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
@@ -458,7 +458,8 @@ def generate_data(user_stats):
 
 
 if __name__ == '__main__':
-    os.makedirs(output_folder, exist_ok=True)
+    if SAVE_PLOTS:
+        os.makedirs(output_folder, exist_ok=True)
 
     with open(json_file, 'r', encoding='utf-8') as file:
         stats = json.load(file)
