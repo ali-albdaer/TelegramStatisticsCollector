@@ -78,8 +78,8 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
             plt.figtext(0.88, (Y:=Y-0.05), f"#{i}: {day} ({activity_data[day]} messages)", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
     if PARAMETERS['ACTIVITY_SHOW_RATIOS'] and activity_factor != -1:
-        plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['activeness'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['activeness'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+        plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['messages_per_day'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['messages_per_day'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
     def init():
         line.set_data([], [])
@@ -244,7 +244,7 @@ def generate_data(user_stats):
     user_ids = GENERATE_FROM_LIST if GENERATE_FROM_LIST else user_stats.keys()
 
     # Calculate some global parameters
-    max_activeness = max(user_stats[user_id].get('activeness', -1) for user_id in user_ids)
+    max_activeness = max(user_stats[user_id].get('messages_per_day', -1) for user_id in user_ids)
     
     for user_id in user_ids:
         user_data = user_stats[user_id]
