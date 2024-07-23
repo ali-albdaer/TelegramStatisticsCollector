@@ -45,15 +45,24 @@ GLOBAL_RANKING_BY_RATIO = True  # Set to False to rank users by total count inst
 # Limits
 MIN_WORD_LENGTH = 1  # Minimum length for a string to be considered a word
 
-USER_WORD_LIMIT = 50  # Limit for top words stored per user
-USER_REACTION_LIMIT = 20  # Limit for top reactions stored per user
+USER_WORD_LIMIT = 1000  # Limit for top words stored per user
+USER_REACTION_LIMIT = 100  # Limit for top reactions stored per user
 USER_CATEGORY_LIMIT = 1000  # Limit for top categories stored per user
-USER_ACTIVE_DAYS_LIMIT = 30  # Limit for top active days stored per user
+USER_ACTIVE_DAYS_LIMIT = 365  # Limit for top active days stored per user
 
-GLOBAL_WORD_LIMIT = 100  # Limit for top global words.
-GLOBAL_REACTION_LIMIT = 20  # Limit for top global reactions.
+GLOBAL_WORD_LIMIT = 10000  # Limit for top global words.
+GLOBAL_REACTION_LIMIT = 100  # Limit for top global reactions.
 GLOBAL_CATEGORY_LIMIT = 1000  # Limit for top category mentions (see phrases.py)
-GLOBAL_RANKING_LIMIT = 50  # Limit for global ranking data (e.g., top users by active days, by media count, etc.)
+GLOBAL_RANKING_LIMIT = 100  # Limit for global ranking data (e.g., top users by active days, by media count, etc.)
+GLOBAL_ACTIVE_DAYS_LIMIT = 365  # Limit for top global active days.
+
+# Set to True to trim users with messages/active days out of the bounds below. Currently only affects the global rankings.
+TRIM_OUTLIERS = False  
+
+OUTLIER_MIN_MESSAGES = 0
+OUTLIER_MAX_MESSAGES = 10**5
+OUTLIER_MIN_ACTIVE_DAYS = 0
+OUTLIER_MAX_ACTIVE_DAYS = 365*10
 
 
 # File paths for collect_data.py
