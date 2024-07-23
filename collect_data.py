@@ -58,7 +58,7 @@ class User:
         self.reactions_given_count = sum(self.reactions_given.values())
         self.reactions_received_count = sum(self.reactions_received.values())
 
-        self.activeness = self.message_count / USER_ACTIVE_DAYS_LIMIT if USER_ACTIVE_DAYS_LIMIT else 0
+        self.activeness = self.message_count / len(self.daily_message_counter) if len(self.daily_message_counter) else 0
         self.media_ratio = (self.media_count * 100) / self.message_count if self.message_count else 0
         self.rg_ratio = (self.reactions_given_count * 100) / self.message_count if self.message_count else 0
         self.rr_ratio = (self.reactions_received_count * 100) / self.message_count if self.message_count else 0
@@ -301,6 +301,10 @@ async def collect_stats():
         os.remove(session_file)
 
     print('[ Program Finished. ]')
+
+
+def calculate_global_ratios(global_stats: dict):
+    ...
 
 
 def save_global_stats(global_stats: dict):
