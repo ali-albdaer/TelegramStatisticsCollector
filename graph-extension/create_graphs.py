@@ -1,10 +1,129 @@
 import os
 import json
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import numpy as np
 from datetime import datetime, timedelta
 
-from config import output_folder, json_file, PARAMETERS, GENERATE_FROM_LIST
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from matplotlib.patches import Circle, RegularPolygon
+from matplotlib.path import Path
+from matplotlib.projections import register_projection
+from matplotlib.projections.polar import PolarAxes
+from matplotlib.spines import Spine
+from matplotlib.transforms import Affine2D
+
+from config import output_folder, json_file, PARAMETERS, GENERATE_FROM_LIST, SHOW_PLOTS, SAVE_PLOTS
+
+
+def normalize_data(data, ranges):
+    normalized_data = {}
+
+    for key, value in data.items():
+        min_val, max_val = ranges[key]
+        normalized_value = (value - min_val) / (max_val - min_val)
+        normalized_data[key] = normalized_value
+        
+    return normalized_data
+
+
+def determine_normalization_ranges(stats, *, metrics):
+    ranges = {metric: (float('inf'), float('-inf')) for metric in metrics}
+
+    for user_data in stats.values():
+        for metric in metrics:
+            value = user_data.get(metric, 0)
+            min_val, max_val = ranges[metric]
+            ranges[metric] = (min(min_val, value), max(max_val, value))
+
+    return ranges
+
+
+def radar_factory(num_vars, frame='circle'):
+    """
+    Create a radar chart with `num_vars` Axes.
+
+    This function creates a RadarAxes projection and registers it.
+
+    Parameters
+    ----------
+    num_vars : int
+        Number of variables for radar chart.
+    frame : {'circle', 'polygon'}
+        Shape of frame surrounding Axes.
+
+    * This function is a modified version of the original radar_factory function from the Matplotlib library.
+    * Link: https://matplotlib.org/stable/gallery/specialty_plots/radar_chart.html
+    """
+
+    # calculate evenly-spaced axis angles
+    theta = np.linspace(0, 2 * np.pi, num_vars, endpoint=False)
+
+    class RadarTransform(PolarAxes.PolarTransform):
+        def transform_path_non_affine(self, path):
+            # Paths with non-unit interpolation steps correspond to gridlines,
+            # in which case we force interpolation (to defeat PolarTransform's
+            # autoconversion to circular arcs).
+            if path._interpolation_steps > 1:
+                path = path.interpolated(num_vars)
+
+            return Path(self.transform(path.vertices), path.codes)
+
+    class RadarAxes(PolarAxes):
+        name = 'radar'
+        PolarTransform = RadarTransform
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.set_theta_zero_location('N')
+
+        def fill(self, *args, closed=True, **kwargs):
+            """Override fill so that line is closed by default"""
+            return super().fill(closed=closed, *args, **kwargs)
+
+        def plot(self, *args, **kwargs):
+            """Override plot so that line is closed by default"""
+            lines = super().plot(*args, **kwargs)
+            for line in lines:
+                self._close_line(line)
+
+        def _close_line(self, line):
+            x, y = line.get_data()
+            if x[0] != x[-1]:
+                x = np.append(x, x[0])
+                y = np.append(y, y[0])
+                line.set_data(x, y)
+
+        def set_varlabels(self, labels):
+            self.set_thetagrids(np.degrees(theta), labels)
+
+        def _gen_axes_patch(self):
+            if frame == 'circle':
+                return Circle((0.5, 0.5), 0.5)
+            
+            elif frame == 'polygon':
+                return RegularPolygon((0.5, 0.5), num_vars, radius=.5, edgecolor="k")
+            
+            else:
+                raise ValueError(f"Unknown value for 'frame': {frame}")
+
+        def _gen_axes_spines(self):
+            if frame == 'circle':
+                return super()._gen_axes_spines()
+
+            elif frame == 'polygon':
+                # spine_type must be 'left'/'right'/'top'/'bottom'/'circle'.
+                spine = Spine(axes=self, spine_type='circle', path=Path.unit_regular_polygon(num_vars))
+                # unit_regular_polygon gives a polygon of radius 1 centered at
+                # (0, 0) but we want a polygon of radius 0.5 centered at (0.5,
+                # 0.5) in axes coordinates.
+                spine.set_transform(Affine2D().scale(.5).translate(.5, .5) + self.transAxes)
+                return {'polar': spine}
+            
+            else:
+                raise ValueError(f"Unknown value for 'frame': {frame}")
+
+    register_projection(RadarAxes)
+    return theta
 
 
 def create_activity_animation(user_id, user_data, animations_folder, *, activity_factor=None):    
@@ -113,10 +232,13 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
     
     ani = animation.FuncAnimation(fig, update, frames=len(date_list), init_func=init, interval=interval, blit=True)
     
-    # Save the animation as a GIF
-    gif_path = os.path.join(animations_folder, "activity_time.gif")
-    ani.save(gif_path, writer='pillow')
-    plt.close(fig)
+    if SHOW_PLOTS:
+        plt.show()
+
+    if SAVE_PLOTS:
+        gif_path = os.path.join(animations_folder, "activity_time.gif")
+        ani.save(gif_path, writer='pillow')
+        plt.close(fig)
 
 
 def create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder):
@@ -200,9 +322,13 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
 
         ani = animation.FuncAnimation(fig, update, frames=max(counts) + 1, init_func=init, interval=interval)
 
-        gif_path = os.path.join(category_animations_folder, f"{category}.gif")
-        ani.save(gif_path, writer='pillow')
-        plt.close(fig)
+        if SHOW_PLOTS:
+            plt.show()
+
+        if SAVE_PLOTS:
+            gif_path = os.path.join(category_animations_folder, f"{category}.gif")
+            ani.save(gif_path, writer='pillow')
+            plt.close(fig)
 
         # Save the last frame as PNG in static_graphs
         category_static_graphs_folder = os.path.join(static_graphs_folder, "category_histograms")
@@ -232,19 +358,81 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
             ax.set_ylim(PARAMETERS['CATEGORY_Y_LIMIT'])
 
         bars = ax.bar(labels, counts, color=[plt.get_cmap('RdYlGn_r')(count / max(counts)) for count in counts])
-        png_path = os.path.join(category_static_graphs_folder, f"{category}.png")
+
+        if SHOW_PLOTS:
+            plt.show()
+
+        if SAVE_PLOTS:
+            png_path = os.path.join(category_static_graphs_folder, f"{category}.png")
+            fig.savefig(png_path)
+            plt.close(fig)
+
+
+def create_metrics_radar_chart(data, static_graphs_folder, *, ranges):    
+    # Define plot colors
+    colors = PARAMETERS['METRICS_RADAR_COLORS']
+
+    # Extract labels and corresponding user data
+    metrics = list(ranges.keys())
+    data_values = [{key: user_data[key] for key in metrics} for user_data in data.values()]
+    
+    # Normalize data values
+    normalized_values = [normalize_data(user_values, ranges) for user_values in data_values]
+    user_data = [list(normalized_values.values()) for normalized_values in normalized_values]    
+        
+    # Create radar chart
+    N = len(metrics)
+    theta = radar_factory(N, frame=PARAMETERS['METRICS_RADAR_FRAME'])
+    
+    fig, ax = plt.subplots(figsize=PARAMETERS['METRICS_RADAR_FIGURE_SIZE'], subplot_kw=dict(projection='radar'))
+    fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
+    ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.0], angle=PARAMETERS['METRICS_RADAR_ANGLE'])
+    
+    # Plot data
+    for d, color in zip(user_data, colors):
+        ax.plot(theta, d, color=color, marker='o')
+        ax.fill(theta, d, facecolor=color, alpha=0.25, label='_nolegend_')
+    
+    # Set variable labels
+    labels = [metric[0] for metric in PARAMETERS['METRICS_RADAR_METRICS'].values()] or metrics
+    ax.set_varlabels(labels)
+    
+    # Enhance grid lines and labels
+    ax.yaxis.grid(True, color=PARAMETERS['METRICS_RADAR_AXIS_COLOR'], linestyle='--', linewidth=0.5)
+    ax.xaxis.grid(True, color=PARAMETERS['METRICS_RADAR_AXIS_COLOR'], linestyle='--', linewidth=0.5)
+    ax.tick_params(axis='y', labelsize=10, color=PARAMETERS['METRICS_RADAR_AXIS_COLOR'])
+    
+    names = [user_data['name'] for user_data in data.values()]
+
+    # Add legend
+    if PARAMETERS['METRICS_RADAR_SHOW_LEGEND']:
+        ax.legend(names, loc=(0.9, .95), labelspacing=0.1, fontsize='small')
+    
+    # Add title
+    if PARAMETERS['METRICS_RADAR_TITLE']:
+        fig.text(0.515, 0.925, PARAMETERS['METRICS_RADAR_TITLE'].format(names=names), horizontalalignment='center', color='black', weight='bold', size='large')
+    
+    if SHOW_PLOTS:
+        plt.show()
+
+    if SAVE_PLOTS:
+        png_path = os.path.join(static_graphs_folder, "metrics_radar.png")
         fig.savefig(png_path)
         plt.close(fig)
 
-
-def create_metrics_radar_chart(user_id, user_data, output_folder):
-    ...
 
 def generate_data(user_stats):
     user_ids = GENERATE_FROM_LIST if GENERATE_FROM_LIST else user_stats.keys()
 
     # Calculate some global parameters
     max_activeness = max(user_stats[user_id].get('messages_per_day', -1) for user_id in user_ids)
+
+    if PARAMETERS['METRICS_RADAR_DYNAMIC_PARAMETERS']:
+        metrics = PARAMETERS['METRICS_RADAR_METRICS']
+        ranges = determine_normalization_ranges(user_stats, metrics=metrics)
+
+    else:
+        ranges = [metric[1] for metric in PARAMETERS['METRICS_RADAR_METRICS'].values()]
     
     for user_id in user_ids:
         user_data = user_stats[user_id]
@@ -266,7 +454,7 @@ def generate_data(user_stats):
         
         create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
         create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder)
-        create_metrics_radar_chart(user_id, user_data, static_graphs_folder)
+        create_metrics_radar_chart({user_id: user_data}, static_graphs_folder, ranges=ranges)
 
 
 if __name__ == '__main__':

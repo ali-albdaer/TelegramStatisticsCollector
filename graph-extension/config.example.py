@@ -1,5 +1,8 @@
 development = False
 
+SHOW_PLOTS = False
+SAVE_PLOTS = True
+
 if development:
     output_folder = "graphs_dev"
     json_file  = "data_dev/user_stats.json"
@@ -74,5 +77,32 @@ PARAMETERS = {
         'sports': -1,
         'colors': 6,
         'famous people': 15
-    }
+    },
+
+    # Params for the radar chart
+    'METRICS_RADAR_TITLE': '{names[0]}\'s Metrics',  # Title of the radar chart. Can be None.
+    'METRICS_RADAR_FIGURE_SIZE': (9, 9),
+    'METRICS_RADAR_FRAME': 'polygon',  # Or 'circle'
+    'METRICS_RADAR_ANGLE': 2,  # Angle in degrees for the labels offset.
+    'METRICS_RADAR_BACKGROUND_COLOR': 'white',
+    'METRICS_RADAR_AXIS_COLOR': 'gray',
+    'METRICS_RADAR_TEXT_COLOR': 'black',
+    'METRICS_RADAR_COLORS': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'],  # For now, only the first color is used.
+    'METRICS_RADAR_SHOW_LEGEND': True,
+    'METRICS_RADAR_DYNAMIC_PARAMETERS': True,  # Set to True to automatically determine the ranges for data normalization. (highly recommended)
+    'METRICS_RADAR_METRICS': {
+
+        # Metric names and their ranges for normalization.
+        # The ranges are used to normalize the data between 0 and 1.
+        # If dynamic parameters is set to True, these ranges will be ignored.
+
+        'message_count': ('Message Count', (0, 10000)),
+        'word_count': ('Word Count', (0, 5000)),
+        'letter_count': ('Letter Count', (0, 20000)),
+        'media_count': ('Media Count', (0, 1000)),
+        'reactions_given_count': ('Reactions Given', (0, 500)),
+        'reactions_received_count': ('Reactions Received', (0, 500)),
+        'loud_message_count': ('Loud Message Count', (0, 100)),
+        'curse_count': ('Curse Count', (0, 100)),
+    },
 }
