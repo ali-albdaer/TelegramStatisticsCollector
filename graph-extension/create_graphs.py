@@ -20,7 +20,7 @@ def normalize_data(data, ranges):
 
     for key, value in data.items():
         min_val, max_val = ranges[key]
-        normalized_value = (value - min_val) / (max_val - min_val)
+        normalized_value = (value - min_val) / (max_val - min_val) if max_val != min_val else 0
         normalized_data[key] = normalized_value
         
     return normalized_data
@@ -28,6 +28,11 @@ def normalize_data(data, ranges):
 
 def determine_normalization_ranges(stats, *, metrics):
     ranges = {metric: (float('inf'), float('-inf')) for metric in metrics}
+
+    # If we only have 1 user, we can't automatically determine the ranges; we'll just use the user's data and display a warning.
+    if len(stats) == 1:
+        print("WARNING: Only 1 user found. Set 'METRICS_RADAR_DYNAMIC_PARAMETERS' to False to manually set the normalization ranges.")
+        return ranges
 
     for user_data in stats.values():
         for metric in metrics:
@@ -432,7 +437,7 @@ def generate_data(user_stats):
         ranges = determine_normalization_ranges(user_stats, metrics=metrics)
 
     else:
-        ranges = [metric[1] for metric in PARAMETERS['METRICS_RADAR_METRICS'].values()]
+        ranges = {metric: value[1] for metric, value in PARAMETERS['METRICS_RADAR_METRICS'].items()}
     
     for user_id in user_ids:
         user_data = user_stats[user_id]
