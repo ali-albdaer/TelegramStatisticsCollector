@@ -100,7 +100,7 @@ PARAMETERS = {
         'word_count': ('Word Count', (0, 5000)),
         'letter_count': ('Letter Count', (0, 20000)),
         'media_count': ('Media Count', (0, 1000)),
-        'reactions_given_count': ('Reactions Given', (0, 500)),
+        'reactions_given_count': ('Reactions Given', (0, 500)),  # Note that global stats only have `reaction_count`
         'reactions_received_count': ('Reactions Received', (0, 500)),
         'loud_message_count': ('Loud Message Count', (0, 100)),
         'curse_count': ('Curse Count', (0, 100)),
