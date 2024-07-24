@@ -11,12 +11,12 @@ Hmm...
 ## Graphs Extension
 
 - [X] Handle DepricatedWarning.
-- [ ] Total messages, words, letters and media visualization (table?).
+- [X] Total messages, words, letters and media visualization (table?).
 - [ ] Option to generate graphs for all categories.
 - [ ] Visualization ideas for naughtiness and loudness.
 - [ ] Visualization ideas for reactions.
 - [ ] Add assertion checks.
-- [ ] Add `global_stats.json` support.
+- [X] Add `global_stats.json` support.
 - [ ] Combine all gifs into one.
 - [ ] Add loops parameter for gifs.
 - [ ] Re-use gif script for pngs.
