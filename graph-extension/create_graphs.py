@@ -230,7 +230,6 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
 
         total_duration = MIN_DURATION + (MAX_DURATION - MIN_DURATION) * ((clamped_frame_count - MIN_FRAMES) / (MAX_FRAMES - MIN_FRAMES))
         interval = total_duration / frame_count
-        
 
     else:
         raise ValueError(f"Invalid animation mode: {PARAMETERS['ACTIVITY_ANIMATION_MODE']}")
@@ -246,7 +245,7 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
         plt.close(fig)
 
 
-def create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder):
+def create_category_histograms_animation(user_id, user_data, animations_folder):
     categories_dict = PARAMETERS['CATEGORIES']
     global_limit = PARAMETERS['CATEGORY_GLOBAL_LIMIT']
     
@@ -335,7 +334,23 @@ def create_category_histogram(user_id, user_data, animations_folder, static_grap
             ani.save(gif_path, writer='pillow')
             plt.close(fig)
 
-        # Save the last frame as PNG in static_graphs
+
+def create_category_histograms_static(user_id, user_data, static_graphs_folder):
+    categories_dict = PARAMETERS['CATEGORIES']
+    global_limit = PARAMETERS['CATEGORY_GLOBAL_LIMIT']
+
+    for category, limit in categories_dict.items():
+        category_data = user_data['top_categories'].get(category, {})
+
+        if not category_data:
+            continue
+
+        entry_limit = limit if limit != -1 else global_limit
+
+        sorted_category_data = sorted(category_data.items(), key=lambda x: x[1], reverse=True)[:entry_limit]
+        labels, counts = zip(*sorted_category_data)
+        labels, counts = list(labels)[::-1], list(counts)[::-1]
+
         category_static_graphs_folder = os.path.join(static_graphs_folder, "category_histograms")
         os.makedirs(category_static_graphs_folder, exist_ok=True)
 
@@ -458,7 +473,8 @@ def generate_data(user_stats):
             os.makedirs(static_graphs_folder)
         
         create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
-        create_category_histogram(user_id, user_data, animations_folder, static_graphs_folder)
+        create_category_histograms_animation(user_id, user_data, animations_folder)
+        create_category_histograms_static(user_id, user_data, static_graphs_folder)
         create_metrics_radar_chart({user_id: user_data}, static_graphs_folder, ranges=ranges)
 
 
