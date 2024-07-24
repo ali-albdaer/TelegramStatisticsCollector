@@ -361,7 +361,7 @@ def save_global_stats(global_stats: dict):
         'letter_count': global_stats['letter_count'],
         'media_count': global_stats['media_count'],
         'reaction_count': global_stats['reaction_count'],
-        'loud_messages_count': global_stats['loud_message_count'],
+        'loud_message_count': global_stats['loud_message_count'],
         'curse_count': global_stats['curse_count'],
         'messages_per_day': global_stats['messages_per_day'],
         'words_per_message': global_stats['words_per_message'],
