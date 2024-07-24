@@ -12,7 +12,7 @@ from matplotlib.projections.polar import PolarAxes
 from matplotlib.spines import Spine
 from matplotlib.transforms import Affine2D
 
-from config import output_folder, json_file, PARAMETERS, GENERATE_FROM_LIST, SHOW_PLOTS, SAVE_PLOTS
+from config import *
 
 
 def normalize_data(data, ranges):
@@ -447,12 +447,13 @@ def generate_data(user_stats):
     # Calculate some global parameters
     max_activeness = max(user_stats[user_id].get('messages_per_day', -1) for user_id in user_ids)
 
-    if PARAMETERS['METRICS_RADAR_DYNAMIC_PARAMETERS']:
-        metrics = PARAMETERS['METRICS_RADAR_METRICS']
-        ranges = determine_normalization_ranges(user_stats, metrics=metrics)
+    if GENERATE_METRICS_RADAR:
+        if PARAMETERS['METRICS_RADAR_DYNAMIC_PARAMETERS']:
+            metrics = PARAMETERS['METRICS_RADAR_METRICS']
+            ranges = determine_normalization_ranges(user_stats, metrics=metrics)
 
-    else:
-        ranges = {metric: value[1] for metric, value in PARAMETERS['METRICS_RADAR_METRICS'].items()}
+        else:
+            ranges = {metric: value[1] for metric, value in PARAMETERS['METRICS_RADAR_METRICS'].items()}
     
     for user_id in user_ids:
         user_data = user_stats[user_id]
@@ -472,10 +473,17 @@ def generate_data(user_stats):
         if SAVE_PLOTS and not os.path.exists(static_graphs_folder):
             os.makedirs(static_graphs_folder)
         
-        create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
-        create_category_histograms_animation(user_id, user_data, animations_folder)
-        create_category_histograms_static(user_id, user_data, static_graphs_folder)
-        create_metrics_radar_chart({user_id: user_data}, static_graphs_folder, ranges=ranges)
+        if GENERATE_ACTIVITY_CHART:
+            create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
+        
+        if GENERATE_CATEGORY_HISTOGRAM_GIFS:
+            create_category_histograms_animation(user_id, user_data, animations_folder)
+
+        if GENERATE_CATEGORY_HISTOGRAM_PNGS:
+            create_category_histograms_static(user_id, user_data, static_graphs_folder)
+        
+        if GENERATE_METRICS_RADAR:
+            create_metrics_radar_chart({user_id: user_data}, static_graphs_folder, ranges=ranges)
 
 
 if __name__ == '__main__':

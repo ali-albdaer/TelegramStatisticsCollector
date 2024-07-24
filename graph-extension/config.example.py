@@ -11,9 +11,16 @@ else:
     output_folder = "graphs"
     json_file  = "data/user_stats.json"
 
+# Choose what graphs to generate.
+GENERATE_ACTIVITY_CHART = True
+GENERATE_CATEGORY_HISTOGRAM_GIFS = True
+GENERATE_CATEGORY_HISTOGRAM_PNGS = True
+GENERATE_METRICS_RADAR = True
+
 # Generate graphs for all users in the list. If the list is empty, generate graphs for all users in the json file.
 GENERATE_FROM_LIST = []
 
+# Parameters for all graphs.
 PARAMETERS = {
     # Global params
     'FIGURE_SIZE': (9.6, 5.4),
