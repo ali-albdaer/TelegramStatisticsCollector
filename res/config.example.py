@@ -41,6 +41,7 @@ COUNT_REACTIONS = True
 LOGOUT = False  # Set to True to delete the session file after running the script, you would need to authenticate Telegram again.
 GLOBAL_RANKING_BY_RATIO = True  # Set to False to rank users by total count instead of ratio. Applies to all categories. (e.g., active days, media count, etc.)
 
+ANALYZE_SENTIMENTS = False  # Experimental feature. Requires `nltk` to be installed. Set to True to analyze the sentiment of messages.
 
 # Limits
 MIN_WORD_LENGTH = 1  # Minimum length for a string to be considered a word

@@ -13,6 +13,13 @@ from res.config import *
 from res.phrases import category_sets, ignored_words
 
 
+if ANALYZE_SENTIMENTS:
+    try:
+        import nltk
+    except ImportError:
+        print('Please install the nltk module to use the ANALYZE_SENTIMENTS option.\nRun: pip install nltk')
+        exit(1)
+
 if CONVERT_UNICODE:
     try:
         from unidecode import unidecode
@@ -119,6 +126,10 @@ def calculate_global_ratios(global_stats: dict, user_stats: dict):
     global_stats['reaction_ratio'] = global_stats['reaction_count'] / gmc
     global_stats['loudness'] = global_stats['loud_message_count'] / gmc
     global_stats['naughtiness'] = global_stats['curse_count'] / gmc
+
+
+def analyze_sentiments(text: str, user: User, global_stats: dict):
+    ...
 
 
 def analyze_message(user: User, global_stats: dict):
@@ -234,6 +245,9 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     if REMOVE_ACCENTS:
         for letter, accents in ACCENTED_CHARS.items():
             text = re.sub(f'[{accents}]', letter, text)
+
+    if ANALYZE_SENTIMENTS:
+        analyze_sentiments(text, user, global_stats)
 
     # Pattern for matching mentions, [name](tg://user?id=id)
     pattern = r'\[(.*?)\]\(tg://user\?id=(\d+)\)'
