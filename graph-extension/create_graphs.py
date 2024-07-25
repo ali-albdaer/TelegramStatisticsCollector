@@ -310,7 +310,7 @@ def create_category_histograms_animation(user_id, user_data, animations_folder):
                 current_height = min(frame, counts[i])
                 bar.set_height(current_height)
                 color_value = current_height / max(counts)
-                bar.set_color(plt.get_cmap('RdYlGn_r')(color_value))
+                bar.set_color(plt.get_cmap(PARAMETERS['CATEGORY_COLORMAP'])(color_value))
             return bars,
     
         if PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'DURATION':
@@ -383,7 +383,7 @@ def create_category_histograms_static(user_id, user_data, static_graphs_folder):
             ax.set_xlim(PARAMETERS['CATEGORY_X_LIMIT'])
             ax.set_ylim(PARAMETERS['CATEGORY_Y_LIMIT'])
 
-        bars = ax.bar(labels, counts, color=[plt.get_cmap('RdYlGn_r')(count / max(counts)) for count in counts])
+        bars = ax.bar(labels, counts, color=[plt.get_cmap(PARAMETERS['CATEGORY_COLORMAP'])(count / max(counts)) for count in counts])
 
         if SHOW_PLOTS:
             plt.show()

@@ -77,6 +77,7 @@ PARAMETERS = {
     'CATEGORY_ANIMATION_MAX_FRAMES': 200,
 
     'CATEGORY_BAR_ORDER': 'DESC',  # 'ASC' or 'DESC' or 'ALPHABETICAL'
+    'CATEGORY_COLORMAP': 'RdYlGn_r',  # Matplotlib colormap for the bars. (https://matplotlib.org/stable/tutorials/colors/colormaps.html)
 
     'CATEGORY_GLOBAL_LIMIT': 10,  # Default limit of bars per category. 
     'CATEGORIES': {  # Limit of bars per category. Set to -1 to use the CATEGORY_GLOBAL_LIMIT.
