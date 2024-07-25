@@ -76,6 +76,8 @@ PARAMETERS = {
     'CATEGORY_ANIMATION_MIN_FRAMES': 10,
     'CATEGORY_ANIMATION_MAX_FRAMES': 200,
 
+    'CATEGORY_BAR_ORDER': 'DESC',  # 'ASC' or 'DESC' or 'ALPHABETICAL'
+
     'CATEGORY_GLOBAL_LIMIT': 10,  # Default limit of bars per category. 
     'CATEGORIES': {  # Limit of bars per category. Set to -1 to use the CATEGORY_GLOBAL_LIMIT.
         'common phrases': 10,

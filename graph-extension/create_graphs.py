@@ -43,6 +43,23 @@ def determine_normalization_ranges(stats, *, metrics):
     return ranges
 
 
+def determine_histogram_bar_order(data, limit):
+    """Determine the order of bars in the histogram. Not that the data show is still the top N entries."""
+
+    data = list(data)[:limit]
+
+    if PARAMETERS['CATEGORY_BAR_ORDER'] == 'ASC':
+        data = sorted(data, key=lambda x: x[1])
+
+    elif PARAMETERS['CATEGORY_BAR_ORDER'] == 'DESC':
+        data = sorted(data, key=lambda x: x[1], reverse=True)
+
+    elif PARAMETERS['CATEGORY_BAR_ORDER'] == 'ALPHABETICAL':
+        data = sorted(data, key=lambda x: x[0])
+
+    return zip(*data)
+
+
 def radar_factory(num_vars, frame='circle'):
     """
     Create a radar chart with `num_vars` Axes.
@@ -256,12 +273,8 @@ def create_category_histograms_animation(user_id, user_data, animations_folder):
             continue
 
         entry_limit = limit if limit != -1 else global_limit
+        labels, counts = determine_histogram_bar_order(category_data.items(), entry_limit)
 
-        sorted_category_data = sorted(category_data.items(), key=lambda x: x[1], reverse=True)[:entry_limit]
-        labels, counts = zip(*sorted_category_data)
-        labels, counts = list(labels)[::-1], list(counts)[::-1]
-
-        # Path for saving category histogram animations
         category_animations_folder = os.path.join(animations_folder, "category_histograms")
         os.makedirs(category_animations_folder, exist_ok=True)
         
@@ -346,10 +359,7 @@ def create_category_histograms_static(user_id, user_data, static_graphs_folder):
             continue
 
         entry_limit = limit if limit != -1 else global_limit
-
-        sorted_category_data = sorted(category_data.items(), key=lambda x: x[1], reverse=True)[:entry_limit]
-        labels, counts = zip(*sorted_category_data)
-        labels, counts = list(labels)[::-1], list(counts)[::-1]
+        labels, counts = determine_histogram_bar_order(category_data.items(), entry_limit)
 
         category_static_graphs_folder = os.path.join(static_graphs_folder, "category_histograms")
         os.makedirs(category_static_graphs_folder, exist_ok=True)
