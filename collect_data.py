@@ -331,7 +331,7 @@ async def collect_stats():
     total_messages = (await telegram_client.get_messages(group_entity, limit=0)).total
     processed_messages = 0
 
-    async for message in telegram_client.iter_messages(group_entity, limit=1000):
+    async for message in telegram_client.iter_messages(group_entity):
         if message.sender_id:
             if message.sender_id not in user_stats:
                 user_stats[message.sender_id] = User(message.sender_id)
