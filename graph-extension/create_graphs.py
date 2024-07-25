@@ -274,9 +274,6 @@ def create_category_histograms_animation(user_id, user_data, animations_folder):
 
         entry_limit = limit if limit != -1 else global_limit
         labels, counts = determine_histogram_bar_order(category_data.items(), entry_limit)
-
-        category_animations_folder = os.path.join(animations_folder, "category_histograms")
-        os.makedirs(category_animations_folder, exist_ok=True)
         
         fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
         fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
@@ -343,6 +340,8 @@ def create_category_histograms_animation(user_id, user_data, animations_folder):
             plt.show()
 
         if SAVE_PLOTS:
+            category_animations_folder = os.path.join(animations_folder, "category_histograms")
+            os.makedirs(category_animations_folder, exist_ok=True)
             gif_path = os.path.join(category_animations_folder, f"{category}.gif")
             ani.save(gif_path, writer='pillow')
             plt.close(fig)
@@ -360,9 +359,6 @@ def create_category_histograms_static(user_id, user_data, static_graphs_folder):
 
         entry_limit = limit if limit != -1 else global_limit
         labels, counts = determine_histogram_bar_order(category_data.items(), entry_limit)
-
-        category_static_graphs_folder = os.path.join(static_graphs_folder, "category_histograms")
-        os.makedirs(category_static_graphs_folder, exist_ok=True)
 
         fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
         fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
@@ -393,6 +389,8 @@ def create_category_histograms_static(user_id, user_data, static_graphs_folder):
             plt.show()
 
         if SAVE_PLOTS:
+            category_static_graphs_folder = os.path.join(static_graphs_folder, "category_histograms")
+            os.makedirs(category_static_graphs_folder, exist_ok=True)
             png_path = os.path.join(category_static_graphs_folder, f"{category}.png")
             fig.savefig(png_path)
             plt.close(fig)
