@@ -83,7 +83,8 @@ def calculate_user_ratios(user: User, global_stats: dict):
     user.reactions_received_count = sum(user.reactions_received.values())
     user.messages_per_active_day = user.message_count / len(user.daily_message_counter) if len(user.daily_message_counter) else 0 
     
-    delta = datetime.strptime(max(user.daily_message_counter.keys()), '%Y-%m-%d') - datetime.strptime(min(user.daily_message_counter.keys()), '%Y-%m-%d')
+    default_date = Counter({DEFAULT_DATE: 1})
+    delta = datetime.strptime(max(user.daily_message_counter.keys() or default_date), '%Y-%m-%d') - datetime.strptime(min(user.daily_message_counter.keys() or default_date), '%Y-%m-%d')
     user.messages_per_day = user.message_count / delta.days if delta.days else 0
 
     mc = user.message_count
@@ -330,7 +331,7 @@ async def collect_stats():
     total_messages = (await telegram_client.get_messages(group_entity, limit=0)).total
     processed_messages = 0
 
-    async for message in telegram_client.iter_messages(group_entity):
+    async for message in telegram_client.iter_messages(group_entity, limit=1000):
         if message.sender_id:
             if message.sender_id not in user_stats:
                 user_stats[message.sender_id] = User(message.sender_id)

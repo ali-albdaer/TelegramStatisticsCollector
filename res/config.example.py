@@ -65,6 +65,7 @@ OUTLIER_MAX_MESSAGES = 10**5
 OUTLIER_MIN_ACTIVE_DAYS = 0
 OUTLIER_MAX_ACTIVE_DAYS = 365*10
 
+DEFAULT_DATE = '2024-01-01'  # Default date for the first message sent by users. (used instead of an empty date)
 
 # File paths for collect_data.py
 session_file = f'{telegram_user}.session'
