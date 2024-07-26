@@ -40,9 +40,9 @@ SHOW_DATE = False  # Set to True to show the date of the messages in the log fil
 SHOW_PROGRESS_BAR = True
 COUNT_REACTIONS = True
 LOGOUT = False  # Set to True to delete the session file after running the script, you would need to authenticate Telegram again.
-CALCULATE_USER_RATIOS = False  # Set to True to calculate the ratio of words/reactions/categories to the total count of messages.
+CALCULATE_USER_RATIOS = True  # Set to True to calculate the ratio of words/reactions/categories to the total count of messages.
 CALCULATE_GLOBAL_RATIOS = True  # Same as above, but for global statistics.
-GLOBAL_RANKING_BY_RATIO = True  # Set to False to rank users by total count instead of ratio. Applies to all categories. (e.g., active days, media count, etc.)
+GLOBAL_RANKING_BY_RATIO = False  # Set to False to rank users by total count instead of ratio. Applies to all categories. (e.g., active days, media count, etc.)
 TRIM_OUTLIERS = False  # Set to True to trim users with messages/active days out of the bounds below. Currently only affects the global rankings.
 
 
