@@ -51,11 +51,11 @@ class User:
         self.word_count = 0
         self.letter_count = 0
         self.media_count = 0
-        self.loud_word_count = 0  # Number of words in all caps.
-        self.curse_count = 0  # Number of curse words used by the user.
         self.reactions_given_count = 0
         self.reactions_received_count = 0
+        self.loud_word_count = 0  # Number of words in all caps.
         self.loud_message_count = 0
+        self.curse_count = 0  # Number of curse words used by the user.
         self.messages_per_active_day = 0
         self.messages_per_day = 0
         self.words_per_message = 0
@@ -119,16 +119,15 @@ def calculate_user_ratios(user: User, global_stats: dict):
 
 def calculate_global_ratios(global_stats: dict):
     gmc = global_stats['message_count']
-
-    global_stats['messages_per_active_day'] = gmc / len(global_stats['daily_message_counter']) if len(global_stats['daily_message_counter']) else 0
     delta = datetime.strptime(max(global_stats['daily_message_counter'].keys()), '%Y-%m-%d') - datetime.strptime(min(global_stats['daily_message_counter'].keys()), '%Y-%m-%d')
-    global_stats['messages_per_day'] = gmc / delta.days if delta.days else 0
-    
-    global_stats['words_per_message'] = global_stats['word_count'] / gmc
-    global_stats['media_per_message'] = global_stats['media_count'] / gmc
-    global_stats['reaction_ratio'] = global_stats['reaction_count'] / gmc
-    global_stats['loudness'] = global_stats['loud_word_count'] / gmc
-    global_stats['naughtiness'] = global_stats['curse_count'] / gmc
+
+    global_stats['ratios']['messages_per_active_day'] = gmc / len(global_stats['daily_message_counter']) if len(global_stats['daily_message_counter']) else 0
+    global_stats['ratios']['messages_per_day'] = gmc / delta.days if delta.days else 0
+    global_stats['ratios']['words_per_message'] = global_stats['word_count'] / gmc
+    global_stats['ratios']['media_per_message'] = global_stats['media_count'] / gmc
+    global_stats['ratios']['reaction_ratio'] = global_stats['reaction_count'] / gmc
+    global_stats['ratios']['loudness'] = global_stats['loud_word_count'] / gmc
+    global_stats['ratios']['naughtiness'] = global_stats['curse_count'] / gmc
 
 
 def analyze_sentiments(text: str, user: User, global_stats: dict):
@@ -224,7 +223,6 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     else:
         text = message.text.encode('utf-8', errors='replace').decode('utf-8')
 
-
     if GET_CHANNEL_LOG: # Logging is done before processing the text.
         if SHOW_DATE:
             date_str = message.date.strftime('%Y-%m-%d %H:%M:%S')
@@ -256,7 +254,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
 
     if text.isupper():
         user.loud_message_count += 1
-        global_stats['message_types']['loud_message_count'] += 1
+        global_stats['loud_message_count'] += 1
 
     words = [word for word in re.findall(r'\b\w+\b', text) if len(word) >= MIN_WORD_LENGTH]
     word_count = len(words)
@@ -306,16 +304,17 @@ async def collect_stats():
         'media_count': 0,
         'reaction_count': 0,
         'loud_word_count': 0,
+        'loud_message_count': 0,
         'curse_count': 0,
-        'message_types': {'loud_message_count': 0},
-        'messages_per_active_day': 0,
-        'messages_per_day': 0,
-        'words_per_message': 0,
-        'media_per_message': 0,
-        'rg_ratio': 0,
-        'rr_ratio': 0,
-        'loudness': 0,
-        'naughtiness': 0,
+        'ratios': {
+            'messages_per_active_day': 0,
+            'messages_per_day': 0,
+            'words_per_message': 0,
+            'media_per_message': 0,
+            'reaction_ratio': 0,
+            'loudness': 0,
+            'naughtiness': 0,
+        },
         'daily_message_counter': Counter(),
         'active_users': dict(),
         'media_users': dict(),
@@ -396,15 +395,9 @@ def save_global_stats(global_stats: dict):
         'media_count': global_stats['media_count'],
         'reaction_count': global_stats['reaction_count'],
         'loud_word_count': global_stats['loud_word_count'],
+        'loud_message_count': global_stats['loud_message_count'],
         'curse_count': global_stats['curse_count'],
-        'message_types': global_stats['message_types'],
-        'messages_per_active_day': global_stats['messages_per_active_day'],
-        'messages_per_day': global_stats['messages_per_day'],
-        'words_per_message': global_stats['words_per_message'],
-        'media_per_message': global_stats['media_per_message'],
-        'reaction_ratio': global_stats['reaction_ratio'],
-        'loudness': global_stats['loudness'],
-        'naughtiness': global_stats['naughtiness'],
+        'ratios': global_stats['ratios'],
         'top_reactions': dict(global_stats['top_reactions'].most_common(GLOBAL_REACTION_LIMIT)),
         'top_active_days': dict(global_stats['daily_message_counter'].most_common(GLOBAL_ACTIVE_DAYS_LIMIT)),
         'top_active_users': {user_id: {'name': user.name, 'messages_per_active_day': user.messages_per_active_day, 'message_count': user.message_count, 'word_count': user.word_count, 'letter_count': user.letter_count} for user_id, user in limited_top_active_users},
@@ -431,13 +424,11 @@ def save_user_stats(user_stats: dict[int, User]):
                 'word_count': user.word_count,
                 'letter_count': user.letter_count,
                 'media_count': user.media_count,
-                'curse_count': user.curse_count,
-                'loud_word_count': user.loud_word_count,
                 'reactions_given_count': user.reactions_given_count,
                 'reactions_received_count': user.reactions_received_count,
-                'message_types': {
-                    'loud_message_count': user.loud_message_count,
-                },
+                'loud_word_count': user.loud_word_count,
+                'loud_message_count': user.loud_message_count,
+                'curse_count': user.curse_count,
                 'ratios': {
                     'messages_per_active_day': user.messages_per_active_day,
                     'messages_per_day': user.messages_per_day,
@@ -472,8 +463,8 @@ def save_user_stats(user_stats: dict[int, User]):
             reactions_given_count INTEGER,
             reactions_received_count INTEGER,
             loud_word_count INTEGER,
-            curse_count INTEGER,
             loud_message_count INTEGER,
+            curse_count INTEGER,
             messages_per_active_day REAL,
             messages_per_day REAL,
             words_per_message REAL,
@@ -497,9 +488,8 @@ def save_user_stats(user_stats: dict[int, User]):
             user_id, user.name, 
             user.message_count, user.word_count, user.letter_count, user.media_count, 
             user.reactions_given_count, user.reactions_received_count, 
-            user.loud_word_count,
-            user.curse_count, 
-            user.loud_message_count,
+            user.loud_word_count, user.loud_message_count,
+            user.curse_count,
             user.messages_per_active_day,
             user.messages_per_day, user.words_per_message, user.media_per_message, 
             user.rg_ratio, user.rr_ratio,
