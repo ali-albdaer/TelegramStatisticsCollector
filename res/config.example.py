@@ -40,6 +40,8 @@ SHOW_DATE = False  # Set to True to show the date of the messages in the log fil
 SHOW_PROGRESS_BAR = True
 COUNT_REACTIONS = True
 LOGOUT = False  # Set to True to delete the session file after running the script, you would need to authenticate Telegram again.
+CALCULATE_USER_RATIOS = False  # Set to True to calculate the ratio of words/reactions/categories to the total count of messages.
+CALCULATE_GLOBAL_RATIOS = False  # Same as above, but for global statistics.
 GLOBAL_RANKING_BY_RATIO = True  # Set to False to rank users by total count instead of ratio. Applies to all categories. (e.g., active days, media count, etc.)
 TRIM_OUTLIERS = False  # Set to True to trim users with messages/active days out of the bounds below. Currently only affects the global rankings.
 
@@ -65,12 +67,56 @@ OUTLIER_MAX_ACTIVE_DAYS = 365*10
 
 
 # Sentiment Analysis [EXPERIMENTAL]: Requires the `transformers` library, along with the `torch` or `tensorflow`.
+# If enabled, the program will take a significantally longer time to run.
+# Example output: 
+"""
+{
+    "0123456789": {
+        ...,
+        "feelings": {
+            "sadness": [
+                7,  // Number of messages with 'sadness' as the dominant sentiment.
+                11.464838723652065  // The sum of 'saddness' scores across all messages sent by the user.
+            ],
+            "neutral": [
+                154,
+                127.76049086579587
+            ],
+            "surprise": [
+                7,
+                15.356227628421038
+            ],
+            "anger": [
+                4,
+                6.874813125003129
+            ],
+            "disgust": [
+                7,
+                9.78928733302746
+            ],
+            "joy": [
+                7,
+                11.871904620085843
+            ],
+            "fear": [
+                3,
+                5.882437665830366
+            ]
+        },
+    },
+    ...
+}
+"""
+
 ANALYZE_SENTIMENTS = False
 SENTIMENT_PIPELINE_ARGS = ('text-classification', )
 SENTIMENT_PIPELINE_KWARGS = {
     'model': 'j-hartmann/emotion-english-distilroberta-base',
     'top_k': 2,
 }
+# Example filter for the dominant sentiment. If the score is less than 0.30, that message will not be classified as having a dominant sentiment.
+# The overall ratio calculation is not affected by this filter.
+dominant_sentiment_filter = lambda label, score: score >= 0.30
 
 
 # File paths for collect_data.py
