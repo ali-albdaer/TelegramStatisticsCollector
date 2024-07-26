@@ -112,7 +112,8 @@ ANALYZE_SENTIMENTS = False
 SENTIMENT_PIPELINE_ARGS = ('text-classification', )
 SENTIMENT_PIPELINE_KWARGS = {
     'model': 'j-hartmann/emotion-english-distilroberta-base',
-    'top_k': 2,
+    'top_k': None,
+    'truncation': True
 }
 # Example filter for the dominant sentiment. If the score is less than 0.30, that message will not be classified as having a dominant sentiment.
 # The overall ratio calculation is not affected by this filter.
