@@ -283,7 +283,13 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
         text = re.sub(pattern, name, text)
 
     if ANALYZE_SENTIMENTS:
-        sentiments = analyze_sentiments(text)
+        try:  # This is an experimental feature. Potentially, not all edge cases are covered.
+            sentiments = analyze_sentiments(text)
+
+        except Exception as e:
+            logging.error(f'Error in sentiment analysis: {e}')
+            sentiments = {}
+
         user.feeling_ratios.update(sentiments)
         global_stats['feeling_ratios'].update(sentiments)
         
