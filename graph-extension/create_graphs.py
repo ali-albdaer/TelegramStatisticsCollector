@@ -450,7 +450,11 @@ def create_metrics_radar_chart(data, static_graphs_folder, *, ranges):
 
 
 def generate_data(user_stats):
-    user_ids = GENERATE_FROM_LIST if GENERATE_FROM_LIST else user_stats.keys()
+    if GENERATE_FROM_LIST is None:
+        user_ids = list(user_stats.keys())
+
+    else:
+        user_ids = [user_id for user_id in user_stats.keys() if user_id in GENERATE_FROM_LIST]
 
     # Calculate some global parameters
     max_activeness = max(user_stats[user_id].get('messages_per_day', -1) for user_id in user_ids)
