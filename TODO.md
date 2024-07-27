@@ -7,7 +7,7 @@ Hmm...
 - [ ] Implement .env variables.
 - [X] Improve repo description and add tags.
 - [ ] Mention this repo in `TelegramDiscordClone`.
-- [ ] Collect hours in top_active_days.
+- ~~[ ] Collect hours in top_active_days.~~
 - [X] Update README.md
 
 ## Graphs Extension
@@ -37,7 +37,7 @@ Hmm...
 
 ## Tasks For Much Later...
 
-- [X] ~~Pickle messages.~~
+- ~~[ ] Pickle messages.~~
 - [X] Save messages into a db.
 - [ ] Combine Graphs & Wordclouds into one extension.
 - [ ] Take a break...
