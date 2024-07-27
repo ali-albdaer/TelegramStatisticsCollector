@@ -27,7 +27,12 @@ def normalize_data(data, ranges):
 
 
 def determine_normalization_ranges(stats, *, metrics):
-    ranges = {metric: (float('inf'), float('-inf')) for metric in metrics}
+    ranges = {
+        metric: {submetric: (float('inf'), float('-inf')) for submetric in value}
+        if isinstance(value, dict)
+        else (float('inf'), float('-inf'))
+        for metric, value in metrics.items()
+    }
 
     # If we only have 1 user, we can't automatically determine the ranges; we'll just use the user's data and display a warning.
     if len(stats) == 1:
@@ -36,7 +41,13 @@ def determine_normalization_ranges(stats, *, metrics):
 
     for user_data in stats.values():
         for metric in metrics:
-            value = user_data.get(metric, 0)
+            if '.' in metric:
+                main_metric, sub_metric = metric.split('.')
+                value = user_data.get(main_metric, {}).get(sub_metric, 0)
+
+            else:
+                value = user_data.get(metric, 0)
+
             min_val, max_val = ranges[metric]
             ranges[metric] = (min(min_val, value), max(max_val, value))
 
@@ -219,8 +230,8 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
             plt.figtext(0.88, (Y:=Y-0.05), f"#{i}: {day} ({activity_data[day]} messages)", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
     if PARAMETERS['ACTIVITY_SHOW_RATIOS'] and activity_factor != -1:
-        plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['messages_per_day'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['messages_per_day'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+        plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['ratios']['messages_per_day'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['ratios']['messages_per_day'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
 
     def init():
         line.set_data([], [])
@@ -402,11 +413,30 @@ def create_metrics_radar_chart(data, static_graphs_folder, *, ranges):
 
     # Extract labels and corresponding user data
     metrics = list(ranges.keys())
-    data_values = [{key: user_data[key] for key in metrics} for user_data in data.values()]
+
+    """
+    Example metric structure:
+
+    metrics = {
+        'message_count': (0, 1000),
+        'media_count': (0, 100),
+        'ratios.messages_per_day': (0, 100),  # Handling nested metrics
+        'ratios.words_per_message': (0, 100),
+    }
+    """
+
+    data_values = [
+        {
+            key: user_data[key.split('.')[0]][key.split('.')[1]] if '.' in key 
+            else user_data[key]
+            for key in metrics
+        }
+        for user_data in data.values()
+    ]
     
     # Normalize data values
     normalized_values = [normalize_data(user_values, ranges) for user_values in data_values]
-    user_data = [list(normalized_values.values()) for normalized_values in normalized_values]    
+    user_data = [list(normalized_values.values()) for normalized_values in normalized_values]
         
     # Create radar chart
     N = len(metrics)
@@ -457,7 +487,7 @@ def generate_data(user_stats):
         user_ids = [user_id for user_id in user_stats.keys() if user_id in GENERATE_FROM_LIST]
 
     # Calculate some global parameters
-    max_activeness = max(user_stats[user_id].get('messages_per_day', -1) for user_id in user_ids)
+    max_activeness = max(user_stats[user_id]['ratios'].get('messages_per_day', -1) for user_id in user_ids) if PARAMETERS['ACTIVITY_SHOW_RATIOS'] else -1
 
     if GENERATE_METRICS_RADAR:
         if PARAMETERS['METRICS_RADAR_DYNAMIC_PARAMETERS']:
