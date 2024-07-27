@@ -16,10 +16,12 @@ development = False
 
 if development:
     telegram_group_id = -1234567890  # Example Telegram group ID, can be obtained using a bot like @getidsbot
+    telegram_group_name = 'Development Group Name'
     output_folder = 'data_dev'
 
 else:
     telegram_group_id = -1234567891  #    ^
+    telegram_group_name = 'Main Group Name'
     output_folder = 'data'
 
 telegram_user = 'example_username'

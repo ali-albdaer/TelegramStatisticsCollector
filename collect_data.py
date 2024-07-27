@@ -329,7 +329,7 @@ async def collect_stats():
     user_stats = {}
     global_stats = {
         'id': telegram_group_id,
-        'name': 'Unknown Group',
+        'name': telegram_group_name,
         'message_count': 0,
         'word_count': 0,
         'letter_count': 0,
@@ -383,7 +383,7 @@ async def collect_stats():
         print('No data was collected. Exiting...')
         exit(0)
 
-    for user in user_stats.values():
+    for i, user in enumerate(user_stats.values(), 1):
         analyze_message(user, global_stats)
 
         if CALCULATE_USER_RATIOS:
@@ -393,7 +393,7 @@ async def collect_stats():
         global_stats['message_count'] += user.message_count
 
         if SHOW_PROGRESS_BAR:
-            print(f'\rProcessed Users: [{total_users} / {len(user_stats)}]', end='')
+            print(f'\rProcessed Users: [{i} / {len(user_stats)}]', end='')
 
     if SHOW_PROGRESS_BAR:
         print()
