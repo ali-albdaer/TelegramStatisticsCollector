@@ -4,13 +4,12 @@ import logging
 import asyncio
 import re
 import sqlite3
+import time
 from datetime import datetime
 from collections import Counter, defaultdict
-from telethon import TelegramClient
-
-# Create the following files in the res directory or rename the examples in res.
-from res.config import * 
+from res.config import *
 from res.phrases import category_sets, ignored_words
+from fetch_group import get_messages
 
 
 if CONVERT_UNICODE:
@@ -47,9 +46,6 @@ if GET_CHANNEL_LOG:
         file.write('')
 
 
-telegram_client = TelegramClient(session_file, api_id, api_hash)
-
-
 class User:
     def __init__(self, user_id: int):
         self.user_id = user_id
@@ -60,9 +56,9 @@ class User:
         self.media_count = 0
         self.reactions_given_count = 0
         self.reactions_received_count = 0
-        self.loud_word_count = 0  # Number of words in all caps.
+        self.loud_word_count = 0
         self.loud_message_count = 0
-        self.curse_count = 0  # Number of curse words used by the user.
+        self.curse_count = 0
         self.messages_per_active_day = 0
         self.messages_per_day = 0
         self.words_per_message = 0
@@ -189,7 +185,7 @@ def analyze_sentiments(text: str):
         
         for sentiment in results:
             result.update({sentiment['label']: sentiment['score']})
-    
+
     else:
         chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
         chunk_count = len(chunks)
@@ -203,7 +199,6 @@ def analyze_sentiments(text: str):
                 score = sentiment['score']
 
                 result[label] = result.get(label, 0) + score / chunk_count
-
 
     return result
 
@@ -231,9 +226,8 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
         user.media_count += 1
         global_stats['media_count'] += 1
 
-    # Collect reactions.
-    if COUNT_REACTIONS and message.reactions and message.reactions.recent_reactions:
-        for reaction in message.reactions.recent_reactions:
+    if COUNT_REACTIONS and message.reactions:
+        for reaction in message.reactions:
             if reaction.peer_id:
                 reaction_user = user_stats.get(reaction.peer_id.user_id, None)
 
@@ -241,10 +235,10 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
                     reaction_user = User(reaction.peer_id.user_id)
                     user_stats[reaction.peer_id.user_id] = reaction_user
 
-                reaction_user.reactions_given[reaction.reaction.emoticon] += 1
+                reaction_user.reactions_given[reaction.reaction] += 1
 
-            user.reactions_received[reaction.reaction.emoticon] += 1
-            global_stats['top_reactions'][reaction.reaction.emoticon] += 1
+            user.reactions_received[reaction.reaction] += 1
+            global_stats['top_reactions'][reaction.reaction] += 1
             global_stats['reaction_count'] += 1
 
     if not message.text:
@@ -256,7 +250,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     else:
         text = message.text.encode('utf-8', errors='replace').decode('utf-8')
 
-    if GET_CHANNEL_LOG: # Logging is done before processing the text.
+    if GET_CHANNEL_LOG:
         if SHOW_DATE:
             date_str = message.date.strftime('%Y-%m-%d %H:%M:%S')
             _text = f'[ {date_str} ] <{user.name}> {text}\n'
@@ -283,7 +277,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
         text = re.sub(pattern, name, text)
 
     if ANALYZE_SENTIMENTS:
-        try:  # This is an experimental feature. Potentially, not all edge cases are covered.
+        try:
             sentiments = analyze_sentiments(text)
 
         except Exception as e:
@@ -332,19 +326,10 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
 
 
 async def collect_stats():
-    await telegram_client.connect()
-
-    if not await telegram_client.is_user_authorized():
-        await telegram_client.send_code_request(telegram_phone)
-        await telegram_client.sign_in(telegram_phone, input('Enter the code you received on Telegram: '))
-
-    group_entity = await telegram_client.get_entity(telegram_group_id)
-    telegram_group_name = group_entity.title if group_entity.title else 'Unknown Group'
-
     user_stats = {}
     global_stats = {
         'id': telegram_group_id,
-        'name': telegram_group_name,
+        'name': 'Unknown Group',
         'message_count': 0,
         'word_count': 0,
         'letter_count': 0,
@@ -376,10 +361,10 @@ async def collect_stats():
         'top_words': Counter(),
     }
 
-    total_messages = (await telegram_client.get_messages(group_entity, limit=0)).total
     processed_messages = 0
+    total_messages = sum(1 for _ in get_messages())
 
-    async for message in telegram_client.iter_messages(group_entity):
+    for message in get_messages():
         if message.sender_id:
             if message.sender_id not in user_stats:
                 user_stats[message.sender_id] = User(message.sender_id)
@@ -422,13 +407,6 @@ async def collect_stats():
 
     save_global_stats(global_stats)
     save_user_stats(user_stats)
-
-    await telegram_client.disconnect()
-
-    if LOGOUT:
-        os.remove(session_file)
-
-    print('[ Program Finished. ]')
 
 
 def save_global_stats(global_stats: dict):
@@ -563,7 +541,6 @@ def save_user_stats(user_stats: dict[int, User]):
 
 
 if __name__ == '__main__':
-    import time
     start = time.time()
 
     try:
@@ -571,6 +548,9 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print('\n[ Program Interrupted. ]')
+
+    else:
+        print('\n[ Data Collection Completed. ]')
 
     end = time.time()
     print(f'Execution Time: {end - start:.2f} seconds')
