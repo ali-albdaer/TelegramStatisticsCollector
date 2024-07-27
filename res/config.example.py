@@ -121,11 +121,15 @@ dominant_sentiment_filter = lambda label, score: score >= 0.30
 
 
 # File paths for collect_data.py
+user_stats_json = f'{output_folder}/user_stats.json'
+user_stats_db = f'{output_folder}/users.db'
+
+
+# File paths for fetch_group.py
 session_file = f'{telegram_user}.session'
 log_channel_file = f'{output_folder}/channel_log.txt'
 global_stats_json = f'{output_folder}/global_stats.json'
-user_stats_json = f'{output_folder}/user_stats.json'
-user_stats_db = f'{output_folder}/users.db'
+messages_db = f'{output_folder}/messages.db'
 
 
 # File paths for get_all_words.py
