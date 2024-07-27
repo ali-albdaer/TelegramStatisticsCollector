@@ -4,13 +4,12 @@ import logging
 import asyncio
 import re
 import sqlite3
+import time
 from datetime import datetime
 from collections import Counter, defaultdict
-from telethon import TelegramClient
-
-# Create the following files in the res directory or rename the examples in res.
-from res.config import * 
+from res.config import *
 from res.phrases import category_sets, ignored_words
+from fetch_group import get_messages
 
 
 if CONVERT_UNICODE:
@@ -18,6 +17,20 @@ if CONVERT_UNICODE:
         from unidecode import unidecode
     except ImportError:
         print('Please install the unidecode module to use the CONVERT_UNICODE option.\nRun: pip install unidecode')
+        exit(1)
+
+
+if ANALYZE_SENTIMENTS:
+    """
+    This is an exmple sentinment analysis pipeline using the transformers library. It may not be accurate depending on the dataset.
+    """
+    try:
+        logging.info('Loading the sentiment analysis pipeline...')
+        from transformers import pipeline
+        emotion_pipeline = pipeline(*SENTIMENT_PIPELINE_ARGS, **SENTIMENT_PIPELINE_KWARGS)
+        logging.info('Sentiment analysis pipeline loaded.')
+    except ImportError:
+        print('Please install the transformers module to use the ANALYZE_SENTIMENTS option.\nAdditionally, one of torch or tensorflow is required.\nRun: pip install transformers')
         exit(1)
 
 
@@ -33,9 +46,6 @@ if GET_CHANNEL_LOG:
         file.write('')
 
 
-telegram_client = TelegramClient(session_file, api_id, api_hash)
-
-
 class User:
     def __init__(self, user_id: int):
         self.user_id = user_id
@@ -44,10 +54,11 @@ class User:
         self.word_count = 0
         self.letter_count = 0
         self.media_count = 0
-        self.loud_message_count = 0  # Number of messages in all caps.
-        self.curse_count = 0  # Number of curse words used by the user.
         self.reactions_given_count = 0
         self.reactions_received_count = 0
+        self.loud_word_count = 0
+        self.loud_message_count = 0
+        self.curse_count = 0
         self.messages_per_active_day = 0
         self.messages_per_day = 0
         self.words_per_message = 0
@@ -56,6 +67,8 @@ class User:
         self.rr_ratio = 0
         self.loudness = 0
         self.naughtiness = 0
+        self.messages_by_feeling = Counter()
+        self.feeling_ratios = Counter()
         self.word_counter = Counter()  # All words used by the user.
         self.daily_message_counter = Counter()  # Number of messages sent per day.
         self.category_words = defaultdict(Counter)  # Keywords and phrases.
@@ -69,12 +82,14 @@ class User:
 
         return below_min or above_max
 
+
 def calculate_user_ratios(user: User, global_stats: dict):
     user.reactions_given_count = sum(user.reactions_given.values())
     user.reactions_received_count = sum(user.reactions_received.values())
     user.messages_per_active_day = user.message_count / len(user.daily_message_counter) if len(user.daily_message_counter) else 0 
     
-    delta = datetime.strptime(max(user.daily_message_counter.keys()), '%Y-%m-%d') - datetime.strptime(min(user.daily_message_counter.keys()), '%Y-%m-%d')
+    default_date = Counter({DEFAULT_DATE: 1})
+    delta = datetime.strptime(max(user.daily_message_counter.keys() or default_date), '%Y-%m-%d') - datetime.strptime(min(user.daily_message_counter.keys() or default_date), '%Y-%m-%d')
     user.messages_per_day = user.message_count / delta.days if delta.days else 0
 
     mc = user.message_count
@@ -82,7 +97,7 @@ def calculate_user_ratios(user: User, global_stats: dict):
     user.media_per_message = user.media_count / mc if mc else 0
     user.rg_ratio = user.reactions_given_count / mc if mc else 0
     user.rr_ratio = user.reactions_received_count / mc if mc else 0
-    user.loudness = user.loud_message_count / mc if mc else 0
+    user.loudness = user.loud_word_count / mc if mc else 0
     user.naughtiness = user.curse_count / mc if mc else 0
 
     if TRIM_OUTLIERS and user.is_outlier():
@@ -107,18 +122,17 @@ def calculate_user_ratios(user: User, global_stats: dict):
         global_stats['cursing_users'][user.user_id] = user
 
 
-def calculate_global_ratios(global_stats: dict, user_stats: dict):
+def calculate_global_ratios(global_stats: dict):
     gmc = global_stats['message_count']
-
-    global_stats['messages_per_active_day'] = gmc / len(global_stats['daily_message_counter']) if len(global_stats['daily_message_counter']) else 0
     delta = datetime.strptime(max(global_stats['daily_message_counter'].keys()), '%Y-%m-%d') - datetime.strptime(min(global_stats['daily_message_counter'].keys()), '%Y-%m-%d')
-    global_stats['messages_per_day'] = gmc / delta.days if delta.days else 0
-    
-    global_stats['words_per_message'] = global_stats['word_count'] / gmc
-    global_stats['media_per_message'] = global_stats['media_count'] / gmc
-    global_stats['reaction_ratio'] = global_stats['reaction_count'] / gmc
-    global_stats['loudness'] = global_stats['loud_message_count'] / gmc
-    global_stats['naughtiness'] = global_stats['curse_count'] / gmc
+
+    global_stats['ratios']['messages_per_active_day'] = gmc / len(global_stats['daily_message_counter']) if len(global_stats['daily_message_counter']) else 0
+    global_stats['ratios']['messages_per_day'] = gmc / delta.days if delta.days else 0
+    global_stats['ratios']['words_per_message'] = global_stats['word_count'] / gmc
+    global_stats['ratios']['media_per_message'] = global_stats['media_count'] / gmc
+    global_stats['ratios']['reaction_ratio'] = global_stats['reaction_count'] / gmc
+    global_stats['ratios']['loudness'] = global_stats['loud_word_count'] / gmc
+    global_stats['ratios']['naughtiness'] = global_stats['curse_count'] / gmc
 
 
 def analyze_message(user: User, global_stats: dict):
@@ -162,6 +176,33 @@ def analyze_message(user: User, global_stats: dict):
                     global_stats['curse_count'] += count
 
 
+def analyze_sentiments(text: str):
+    chunk_size = 512
+
+    if len(text) <= chunk_size:
+        results = emotion_pipeline(text)[0]
+        result = {}
+        
+        for sentiment in results:
+            result.update({sentiment['label']: sentiment['score']})
+
+    else:
+        chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+        chunk_count = len(chunks)
+        result = {}
+
+        for chunk in chunks:
+            results = emotion_pipeline(chunk)[0]
+
+            for sentiment in results:
+                label = sentiment['label']
+                score = sentiment['score']
+
+                result[label] = result.get(label, 0) + score / chunk_count
+
+    return result
+
+
 def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     sender_id = message.sender_id
     user = user_stats[sender_id]
@@ -185,9 +226,8 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
         user.media_count += 1
         global_stats['media_count'] += 1
 
-    # Collect reactions.
-    if COUNT_REACTIONS and message.reactions and message.reactions.recent_reactions:
-        for reaction in message.reactions.recent_reactions:
+    if COUNT_REACTIONS and message.reactions:
+        for reaction in message.reactions:
             if reaction.peer_id:
                 reaction_user = user_stats.get(reaction.peer_id.user_id, None)
 
@@ -195,10 +235,10 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
                     reaction_user = User(reaction.peer_id.user_id)
                     user_stats[reaction.peer_id.user_id] = reaction_user
 
-                reaction_user.reactions_given[reaction.reaction.emoticon] += 1
+                reaction_user.reactions_given[reaction.reaction] += 1
 
-            user.reactions_received[reaction.reaction.emoticon] += 1
-            global_stats['top_reactions'][reaction.reaction.emoticon] += 1
+            user.reactions_received[reaction.reaction] += 1
+            global_stats['top_reactions'][reaction.reaction] += 1
             global_stats['reaction_count'] += 1
 
     if not message.text:
@@ -210,11 +250,7 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
     else:
         text = message.text.encode('utf-8', errors='replace').decode('utf-8')
 
-    if text.isupper():
-        user.loud_message_count += 1
-        global_stats['loud_message_count'] += 1
-
-    if GET_CHANNEL_LOG: # Logging is done before processing the text.
+    if GET_CHANNEL_LOG:
         if SHOW_DATE:
             date_str = message.date.strftime('%Y-%m-%d %H:%M:%S')
             _text = f'[ {date_str} ] <{user.name}> {text}\n'
@@ -224,9 +260,6 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
 
         with open(log_channel_file, 'a', encoding='utf-8') as file:
             file.write(_text)
-
-    if CASE_INSENSITIVE:
-        text = text.lower()
 
     if IGNORE_URLS:
         text = re.sub(r'http\S+', ' ', text)
@@ -243,9 +276,38 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
         name = match.group(1)
         text = re.sub(pattern, name, text)
 
+    if ANALYZE_SENTIMENTS:
+        try:
+            sentiments = analyze_sentiments(text)
+
+        except Exception as e:
+            logging.error(f'Error in sentiment analysis: {e}')
+            sentiments = {}
+
+        user.feeling_ratios.update(sentiments)
+        global_stats['feeling_ratios'].update(sentiments)
+        
+        filtered_sentiments = {k: v for k, v in sentiments.items() if dominant_sentiment_filter(k, v)}
+        dominant_sentiment = max(filtered_sentiments, key=filtered_sentiments.get) if filtered_sentiments else None
+        if dominant_sentiment:
+            user.messages_by_feeling[dominant_sentiment] += 1
+            global_stats['messages_by_feeling'][dominant_sentiment] += 1
+
+    if text.isupper():
+        user.loud_message_count += 1
+        global_stats['loud_message_count'] += 1
+
     words = [word for word in re.findall(r'\b\w+\b', text) if len(word) >= MIN_WORD_LENGTH]
     word_count = len(words)
     letter_count = sum(len(word) for word in words)
+
+    loud_words = [word for word in words if word.isupper()]
+    user.loud_word_count += len(loud_words)
+    global_stats['loud_word_count'] += len(loud_words)
+
+    if CASE_INSENSITIVE:
+        text = text.lower()
+        words = [word.lower() for word in words]
 
     if IGNORE_COMMON_WORDS:
         words = [word for word in words if word not in ignored_words]
@@ -264,15 +326,6 @@ def fetch_message_stats(message, user_stats: dict, global_stats: dict):
 
 
 async def collect_stats():
-    await telegram_client.connect()
-
-    if not await telegram_client.is_user_authorized():
-        await telegram_client.send_code_request(telegram_phone)
-        await telegram_client.sign_in(telegram_phone, input('Enter the code you received on Telegram: '))
-
-    group_entity = await telegram_client.get_entity(telegram_group_id)
-    telegram_group_name = group_entity.title if group_entity.title else 'Unknown Group'
-
     user_stats = {}
     global_stats = {
         'id': telegram_group_id,
@@ -282,16 +335,20 @@ async def collect_stats():
         'letter_count': 0,
         'media_count': 0,
         'reaction_count': 0,
+        'loud_word_count': 0,
         'loud_message_count': 0,
         'curse_count': 0,
-        'messages_per_active_day': 0,
-        'messages_per_day': 0,
-        'words_per_message': 0,
-        'media_per_message': 0,
-        'rg_ratio': 0,
-        'rr_ratio': 0,
-        'loudness': 0,
-        'naughtiness': 0,
+        'ratios': {
+            'messages_per_active_day': 0,
+            'messages_per_day': 0,
+            'words_per_message': 0,
+            'media_per_message': 0,
+            'reaction_ratio': 0,
+            'loudness': 0,
+            'naughtiness': 0,
+        },
+        'messages_by_feeling': Counter(),
+        'feeling_ratios': Counter(),
         'daily_message_counter': Counter(),
         'active_users': dict(),
         'media_users': dict(),
@@ -304,10 +361,10 @@ async def collect_stats():
         'top_words': Counter(),
     }
 
-    total_messages = (await telegram_client.get_messages(group_entity, limit=0)).total
     processed_messages = 0
+    total_messages = sum(1 for _ in get_messages())
 
-    async for message in telegram_client.iter_messages(group_entity):
+    for message in get_messages():
         if message.sender_id:
             if message.sender_id not in user_stats:
                 user_stats[message.sender_id] = User(message.sender_id)
@@ -326,15 +383,17 @@ async def collect_stats():
         print('No data was collected. Exiting...')
         exit(0)
 
-    for user in user_stats.values():
+    for i, user in enumerate(user_stats.values(), 1):
         analyze_message(user, global_stats)
-        calculate_user_ratios(user, global_stats)
+
+        if CALCULATE_USER_RATIOS:
+            calculate_user_ratios(user, global_stats)
 
         global_stats['daily_message_counter'].update(user.daily_message_counter)
         global_stats['message_count'] += user.message_count
 
         if SHOW_PROGRESS_BAR:
-            print(f'\rProcessed Users: [{total_users} / {len(user_stats)}]', end='')
+            print(f'\rProcessed Users: [{i} / {len(user_stats)}]', end='')
 
     if SHOW_PROGRESS_BAR:
         print()
@@ -343,16 +402,11 @@ async def collect_stats():
         print("No messages to analyze. Exiting...")
         exit(0)
 
-    calculate_global_ratios(global_stats, user_stats)
+    if CALCULATE_GLOBAL_RATIOS:
+        calculate_global_ratios(global_stats)
+
     save_global_stats(global_stats)
     save_user_stats(user_stats)
-
-    await telegram_client.disconnect()
-
-    if LOGOUT:
-        os.remove(session_file)
-
-    print('[ Program Finished. ]')
 
 
 def save_global_stats(global_stats: dict):
@@ -360,7 +414,7 @@ def save_global_stats(global_stats: dict):
     limited_top_media_users = sorted(global_stats['media_users'].items(), key=lambda x: x[1].media_per_message if GLOBAL_RANKING_BY_RATIO else x[1].media_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
     limited_top_reacted_users = sorted(global_stats['reacted_users'].items(), key=lambda x: x[1].rr_ratio if GLOBAL_RANKING_BY_RATIO else x[1].reactions_received_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
     limited_top_reacting_users = sorted(global_stats['reacting_users'].items(), key=lambda x: x[1].rg_ratio if GLOBAL_RANKING_BY_RATIO else x[1].reactions_given_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
-    limited_top_loud_users = sorted(global_stats['loud_users'].items(), key=lambda x: x[1].loudness if GLOBAL_RANKING_BY_RATIO else x[1].loud_message_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
+    limited_top_loud_users = sorted(global_stats['loud_users'].items(), key=lambda x: x[1].loudness if GLOBAL_RANKING_BY_RATIO else x[1].loud_word_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
     limited_top_cursing_users = sorted(global_stats['cursing_users'].items(), key=lambda x: x[1].naughtiness if GLOBAL_RANKING_BY_RATIO else x[1].curse_count, reverse=True)[:GLOBAL_RANKING_LIMIT]
 
     json_global_stats = {
@@ -371,19 +425,15 @@ def save_global_stats(global_stats: dict):
         'letter_count': global_stats['letter_count'],
         'media_count': global_stats['media_count'],
         'reaction_count': global_stats['reaction_count'],
+        'loud_word_count': global_stats['loud_word_count'],
         'loud_message_count': global_stats['loud_message_count'],
         'curse_count': global_stats['curse_count'],
-        'messages_per_active_day': global_stats['messages_per_active_day'],
-        'messages_per_day': global_stats['messages_per_day'],
-        'words_per_message': global_stats['words_per_message'],
-        'media_per_message': global_stats['media_per_message'],
-        'reaction_ratio': global_stats['reaction_ratio'],
-        'loudness': global_stats['loudness'],
-        'naughtiness': global_stats['naughtiness'],
+        **({'ratios': global_stats['ratios']} if CALCULATE_GLOBAL_RATIOS else {}),
+        **({'feelings': {k: (v, global_stats['feeling_ratios'][k]) for k, v in global_stats['messages_by_feeling'].items()}} if ANALYZE_SENTIMENTS else {}),
         'top_reactions': dict(global_stats['top_reactions'].most_common(GLOBAL_REACTION_LIMIT)),
         'top_active_days': dict(global_stats['daily_message_counter'].most_common(GLOBAL_ACTIVE_DAYS_LIMIT)),
         'top_active_users': {user_id: {'name': user.name, 'messages_per_active_day': user.messages_per_active_day, 'message_count': user.message_count, 'word_count': user.word_count, 'letter_count': user.letter_count} for user_id, user in limited_top_active_users},
-        'top_loud_users': {user_id: {'name': user.name, 'loudness': user.loudness, 'loud_message_count': user.loud_message_count} for user_id, user in limited_top_loud_users},
+        'top_loud_users': {user_id: {'name': user.name, 'loudness': user.loudness, 'loud_word_count': user.loud_word_count} for user_id, user in limited_top_loud_users},
         'top_media_users': {user_id: {'name': user.name, 'media_per_message': user.media_per_message, 'media_count': user.media_count} for user_id, user in limited_top_media_users},
         'top_reacted_users': {user_id: {'name': user.name, 'rr_ratio': user.rr_ratio, 'reactions_received_count': user.reactions_received_count} for user_id, user in limited_top_reacted_users},
         'top_reacting_users': {user_id: {'name': user.name, 'rg_ratio': user.rg_ratio, 'reactions_given_count': user.reactions_given_count} for user_id, user in limited_top_reacting_users},
@@ -408,16 +458,20 @@ def save_user_stats(user_stats: dict[int, User]):
                 'media_count': user.media_count,
                 'reactions_given_count': user.reactions_given_count,
                 'reactions_received_count': user.reactions_received_count,
+                'loud_word_count': user.loud_word_count,
                 'loud_message_count': user.loud_message_count,
                 'curse_count': user.curse_count,
-                'messages_per_active_day': user.messages_per_active_day,
-                'messages_per_day': user.messages_per_day,
-                'words_per_message': user.words_per_message,
-                'media_per_message': user.media_per_message,
-                'rg_ratio': user.rg_ratio,
-                'rr_ratio': user.rr_ratio,
-                'loudness': user.loudness,
-                'naughtiness': user.naughtiness,
+                **({'ratios': {
+                    'messages_per_active_day': user.messages_per_active_day,
+                    'messages_per_day': user.messages_per_day,
+                    'words_per_message': user.words_per_message,
+                    'media_per_message': user.media_per_message,
+                    'rg_ratio': user.rg_ratio,
+                    'rr_ratio': user.rr_ratio,
+                    'loudness': user.loudness,
+                    'naughtiness': user.naughtiness,
+                }} if CALCULATE_USER_RATIOS else {}),
+                **({'feelings': {k: (v, user.feeling_ratios[k]) for k, v in user.messages_by_feeling.items()}} if ANALYZE_SENTIMENTS else {}),
                 'top_reactions_given': dict(user.reactions_given.most_common(USER_REACTION_LIMIT)),
                 'top_reactions_received': dict(user.reactions_received.most_common(USER_REACTION_LIMIT)),
                 'top_active_days': dict(user.daily_message_counter.most_common(USER_ACTIVE_DAYS_LIMIT)),
@@ -441,6 +495,7 @@ def save_user_stats(user_stats: dict[int, User]):
             media_count INTEGER,
             reactions_given_count INTEGER,
             reactions_received_count INTEGER,
+            loud_word_count INTEGER,
             loud_message_count INTEGER,
             curse_count INTEGER,
             messages_per_active_day REAL,
@@ -451,6 +506,7 @@ def save_user_stats(user_stats: dict[int, User]):
             rr_ratio REAL,
             loudness REAL,
             naughtiness REAL,
+            feelings TEXT,
             top_reactions_given TEXT,
             top_reactions_received TEXT,
             top_active_days TEXT,
@@ -461,15 +517,18 @@ def save_user_stats(user_stats: dict[int, User]):
 
     for user_id, user in user_stats.items():
         cursor.execute('''
-            INSERT OR REPLACE INTO user_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO user_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             user_id, user.name, 
             user.message_count, user.word_count, user.letter_count, user.media_count, 
             user.reactions_given_count, user.reactions_received_count, 
-            user.loud_message_count, user.curse_count, user.messages_per_active_day,
+            user.loud_word_count, user.loud_message_count,
+            user.curse_count,
+            user.messages_per_active_day,
             user.messages_per_day, user.words_per_message, user.media_per_message, 
             user.rg_ratio, user.rr_ratio,
             user.loudness, user.naughtiness,
+            json.dumps({k: (v, user.feeling_ratios[k]) for k, v in user.messages_by_feeling.items()}),
             json.dumps(dict(user.reactions_given.most_common(USER_REACTION_LIMIT))),
             json.dumps(dict(user.reactions_received.most_common(USER_REACTION_LIMIT))),
             json.dumps(dict(user.daily_message_counter.most_common(USER_ACTIVE_DAYS_LIMIT))),
@@ -482,8 +541,16 @@ def save_user_stats(user_stats: dict[int, User]):
 
 
 if __name__ == '__main__':
+    start = time.time()
+
     try:
         asyncio.run(collect_stats())
 
     except KeyboardInterrupt:
         print('\n[ Program Interrupted. ]')
+
+    else:
+        print('\n[ Data Collection Completed. ]')
+
+    end = time.time()
+    print(f'Execution Time: {end - start:.2f} seconds')

@@ -1,13 +1,17 @@
 
 # Telegram Statistics Collector
 
-A set of Python scripts that collects, analyzes and visualizes statistics from Telegram group messages. The project consists of 3 scripts:
+A set of Python scripts that collects, analyzes and visualizes statistics from Telegram group messages. The project consists of 5 scripts:
 
-- `collect_data.py`: Fetches messages from a specified Telegram group, lookes for keywords and stores various statistics about the messages and their senders in JSON files and a SQLite database. Statistics and keywords are configurable.
+- `fetch_group.py`: Fetches messages from the specified group and saves them to a sqlite database. The last processed message is checked when the script is executed, new messages can be easily added to the db by exeuting the script again.
 
-- `get_all_words.py`: Fecthes messages from a specified Telegram group and stores all words found into 4 `.json` files. (case sensitive / insensitive; sorted alphabetically / by frequency)
+- `collect_data.py`: Analyzes the messages in the db file then saves various statistics about the messages and their senders in 2 JSON files (global_stats and user_stats) and creates an extra SQLite database for users. Statistics and keywords are configurable. Optional sentiment analysis support.
 
-- `wordcloud-extension/create_wordclouds.py`: Converts the `.json` files that are obtained from `collect_data.py` to word clouds. See [wordclouds extension](#extra-funtionality-wordclouds-experimental)
+- `get_all_words.py`: Fecthes messages from a specified Telegram group and stores all words found into 4 `.json` files. (case sensitive / insensitive; sorted alphabetically / by frequency).
+
+- `wordcloud-extension/create_wordclouds.py`: Uses the word and category data in the JSON files (obtained from `collect_data.py`) to generate word clouds. See [wordclouds extension](#visualizing-the-data-experimental)
+
+- `graph-extension/create_graphs.py`: Converts user / global metrics (message count, media count, ...) and other analytics into various static graphs and animations. See [graphs extension](#visualizing-the-data-experimental)
 
 ## Installation
 
@@ -36,24 +40,7 @@ A set of Python scripts that collects, analyzes and visualizes statistics from T
    telegram_group_id = 'your_group_id'
    ```
 
-2. **Choose the paths for the output files:**
-
-   ```python
-   # res/config.py
-   # File paths for collect_data.py
-   session_file = f'{telegram_user}.session'
-   global_stats_json = 'data/global_stats.json'
-   user_stats_json = 'data/user_stats.json'
-   user_stats_db = 'data/users.db'
-
-   # File paths for get_all_words.py
-   sensitive_freq_json = 'data/all_words_case_sensitive_freq.json'
-   sensitive_alpha_json = 'data/all_words_case_sensitive_alpha.json'
-   insensitive_freq_json = 'data/all_words_case_insensitive_freq.json'
-   insensitive_alpha_json = 'data/all_words_case_insensitive_alpha.json'
-   ```
-
-3. **Optionally configure the following parameters:**
+2. **Optionally configure the rest of the parameters:**
 
    ```python
    # res/config.py
@@ -65,6 +52,7 @@ A set of Python scripts that collects, analyzes and visualizes statistics from T
    COUNT_REACTIONS = True
    LOGOUT = False
    GLOBAL_RANKING_BY_RATIO = True
+   ...
 
    # Limits
    MIN_WORD_LENGTH = 1
@@ -77,20 +65,38 @@ A set of Python scripts that collects, analyzes and visualizes statistics from T
    GLOBAL_WORD_LIMIT = 50
    GLOBAL_REACTION_LIMIT = 10 
    GLOBAL_CATEGORY_LIMIT = 1000 
-   GLOBAL_RANKING_LIMIT = 50 
+   GLOBAL_RANKING_LIMIT = 50
+   ...
+
+   # Sentiment Analysis Configuration
+   ANALYZE_SENTIMENTS = False
+   SENTIMENT_PIPELINE_ARGS = ('text-classification', )
+   SENTIMENT_PIPELINE_KWARGS = {
+      'model': 'j-hartmann/emotion-english-distilroberta-base',
+      'top_k': None,
+      'truncation': True
+   }
+   ...
+
+   # File Paths
+   user_stats_json = f'{output_folder}/user_stats.json'
+   user_stats_db = f'{output_folder}/users.db'
+   session_file = f'{telegram_user}.session'
+   log_channel_file = f'{output_folder}/channel_log.txt'
+   ...
    ```
 
-4. **Create an `explicit.py` file in the `res` directory and flag certain words as curse words (see `res/explicit.example.py`):**
+4. **Create a file called `explicit.py` in the `res` directory and flag certain words as curse words (see `res/explicit.example.py`):**
 
    ```python
    # res/explicit.py
    curses = {"slubberdagullion", "gobemouche", "fopdoodle", "tatterdemalion", "scallywag"}
    ```
 
-5. **Create a `phrases.py` file in the `res` directory and add the words/phrases you want to track (see `res/phrases.example.py`):**
+5. **Create a file called `phrases.py` in the `res` directory and add the words/phrases you want to track (see `res/phrases.example.py`):**
 
    ```python
-   # res/phrase.py
+   # res/phrases.py
    from res.explicit import curses
 
    category_sets = {
@@ -109,9 +115,10 @@ A set of Python scripts that collects, analyzes and visualizes statistics from T
 
 ## Usage
 
-1. **Run the script you want:**
+1. **Run the scripts you want:**
 
    ```sh
+   python fetch_group.py
    python collect_data.py
    ```
 
@@ -121,11 +128,13 @@ A set of Python scripts that collects, analyzes and visualizes statistics from T
    python get_all_words.py
    ```
 
-   Either script will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. Simply type the code you receive from Telegram in the terminal.
+   Either set of scripts will connect to your Telegram account and start collecting messages from the specified group. If it's the first time running the script, you will need to authorize the Telegram client. Simply type the code you receive from Telegram in the terminal.
 
 2. **View the data:**
 
-   `collect_data.py`: the statistics will be saved in:
+   `fetch_group.py` will save the messages in `data/messages.db`.
+
+   `collect_data.py` will save the statistics in the following files:
       - `data/global_stats.json`,
       - `data/user_stats.json`,
       - and `data/user_stats.db`.
@@ -138,7 +147,7 @@ A set of Python scripts that collects, analyzes and visualizes statistics from T
 
 ## Visualizing The Data (experimental)
 - The data you obtained can be used to generate to nice word clouds, check [wordclouds.md](wordcloud-extension/wordclouds.md)
-- To create activity graphs and animations using the data you obtained, check [coming-soon](#visualizing-the-data-experimental)
+- To create activity graphs and animations using the data you obtained, check [graphs.md](graph-extension/graphs.md)
 
 ## Disclaimer
 

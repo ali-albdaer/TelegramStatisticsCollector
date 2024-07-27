@@ -7,7 +7,8 @@ Hmm...
 - [ ] Implement .env variables.
 - [X] Improve repo description and add tags.
 - [ ] Mention this repo in `TelegramDiscordClone`.
-- [ ] Collect hours in top_active_days.
+- ~~[ ] Collect hours in top_active_days.~~
+- [X] Update README.md
 
 ## Graphs Extension
 
@@ -25,16 +26,18 @@ Hmm...
 - [ ] Write graphs.md & mention it in README.md.
 - [ ] Merge into master.
 
-## Tasks For Later
+## Long Tasks
 
 - [ ] A script that creates zip files for each user containing all data and visuals.
-- [ ] Better ratelimit handling.
+- [X] Better ratelimit handling.
 - [ ] Add visuals to README.md.
 - [ ] Automatic parameter option for word clouds.
-- [ ] Save temp data for crashes / halts.
+- [X] Save temp data for crashes / halts.
+- [X] Refactor the main script.
 
 ## Tasks For Much Later...
 
-- [ ] Pickle messages.
+- ~~[ ] Pickle messages.~~
+- [X] Save messages into a db.
 - [ ] Combine Graphs & Wordclouds into one extension.
 - [ ] Take a break...
