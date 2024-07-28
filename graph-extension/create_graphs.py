@@ -563,7 +563,7 @@ def create_radar_chart(
 
 
 def generate_data(user_stats):
-    if GENERATE_FROM_LIST is None:
+    if not GENERATE_FROM_LIST:
         user_ids = list(user_stats.keys())
 
     else:
