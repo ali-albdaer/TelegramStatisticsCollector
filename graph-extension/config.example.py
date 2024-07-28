@@ -94,7 +94,6 @@ CATEGORY_PARAMS = {
     },
 }
 
-
 METRICS_RADAR_PARAMS = {
     'TITLE': '{names[0]} - Metrics',  # Title of the radar chart. Can be None.
     'FIGURE_SIZE': (9, 9),
@@ -119,5 +118,30 @@ METRICS_RADAR_PARAMS = {
         'reactions_received_count': ('Reactions Received', (0, 500)),  # ^^^
         'loud_message_count': ('Loud Message Count', (0, 100)),
         'curse_count': ('Curse Count', (0, 100)),
+    },
+}
+
+FEELINGS_RADAR_PARAMS = {
+    'TITLE': '{names[0]} - Feelings',  # Title of the radar chart. Can be None.
+    'FIGURE_SIZE': (9, 9),
+    'FRAME': 'polygon',  # Or 'circle'
+    'ANGLE': 2,  # Angle in degrees for the labels offset.
+    'BACKGROUND_COLOR': 'white',
+    'AXIS_COLOR': 'gray',
+    'TEXT_COLOR': 'black',
+    'COLORS': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'],  # For now, only the first color is used.
+    'SHOW_LEGEND': True,
+    'DYNAMIC_PARAMETERS': True,  # Set to True to automatically determine the ranges for data normalization. (highly recommended)
+    'FEELINGS': {
+        # Feeling names and their ranges for normalization.
+        # The ranges are used to normalize the data between 0 and 1.
+        # If dynamic parameters is set to True, these ranges will be ignored.
+        'feeling_ratios.neutral': ('Neutral', (0, 1)),
+        'feeling_ratios.joy': ('Joy', (0, 1)),
+        'feeling_ratios.surprise': ('Surprise', (0, 1)),
+        'feeling_ratios.sadness': ('Sadness', (0, 1)),
+        'feeling_ratios.anger': ('Anger', (0, 1)),
+        'feeling_ratios.disgust': ('Disgust', (0, 1)),
+        'feeling_ratios.fear': ('Fear', (0, 1)),
     },
 }

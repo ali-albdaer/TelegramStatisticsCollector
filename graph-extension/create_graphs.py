@@ -479,7 +479,7 @@ def create_category_histograms_static(
             plt.close(fig)
 
 
-def create_metrics_radar_chart(
+def create_radar_chart(
     data, 
     static_graphs_folder, 
     *,
@@ -576,10 +576,18 @@ def generate_data(user_stats):
     if GENERATE_METRICS_RADAR:
         if METRICS_RADAR_PARAMS['DYNAMIC_PARAMETERS']:
             metrics = METRICS_RADAR_PARAMS['METRICS']
-            ranges = determine_normalization_ranges(user_stats, metrics=metrics)
+            metric_ranges = determine_normalization_ranges(user_stats, metrics=metrics)
 
         else:
-            ranges = {metric: value[1] for metric, value in METRICS_RADAR_PARAMS['METRICS'].items()}
+            metric_ranges = {metric: value[1] for metric, value in METRICS_RADAR_PARAMS['METRICS'].items()}
+
+    if GENERATE_FEELINGS_RADAR:
+        if FEELINGS_RADAR_PARAMS['DYNAMIC_PARAMETERS']:
+            feelings = FEELINGS_RADAR_PARAMS['FEELINGS']
+            feeling_ranges = determine_normalization_ranges(user_stats, metrics=feelings)
+
+        else:
+            feeling_ranges = {feeling: value[1] for feeling, value in FEELINGS_RADAR_PARAMS['FEELINGS'].items()}
     
     # Generate graphs for each user
     for user_id in user_ids:
@@ -683,10 +691,10 @@ def generate_data(user_stats):
             )
         
         if GENERATE_METRICS_RADAR:
-            create_metrics_radar_chart(
+            create_radar_chart(
                 {user_id: user_data}, 
                 static_graphs_folder, 
-                ranges=ranges,
+                ranges=metric_ranges,
                 radar_metrics=METRICS_RADAR_PARAMS['METRICS'],
                 radar_colors=METRICS_RADAR_PARAMS['COLORS'],
                 figure_size=METRICS_RADAR_PARAMS['FIGURE_SIZE'],
@@ -695,6 +703,21 @@ def generate_data(user_stats):
                 title=METRICS_RADAR_PARAMS['TITLE'],
                 axis_angle=METRICS_RADAR_PARAMS['ANGLE'],
                 axis_color=METRICS_RADAR_PARAMS['AXIS_COLOR']
+            )
+
+        if GENERATE_FEELINGS_RADAR:
+            create_radar_chart(
+                {user_id: user_data}, 
+                static_graphs_folder, 
+                ranges=feeling_ranges,
+                radar_metrics=FEELINGS_RADAR_PARAMS['FEELINGS'],
+                radar_colors=FEELINGS_RADAR_PARAMS['COLORS'],
+                figure_size=FEELINGS_RADAR_PARAMS['FIGURE_SIZE'],
+                frame=FEELINGS_RADAR_PARAMS['FRAME'],
+                show_legend=FEELINGS_RADAR_PARAMS['SHOW_LEGEND'],
+                title=FEELINGS_RADAR_PARAMS['TITLE'],
+                axis_angle=FEELINGS_RADAR_PARAMS['ANGLE'],
+                axis_color=FEELINGS_RADAR_PARAMS['AXIS_COLOR']
             )
 
 
