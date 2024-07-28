@@ -36,7 +36,7 @@ def determine_normalization_ranges(stats, *, metrics):
 
     # If we only have 1 user, we can't automatically determine the ranges; we'll just use the user's data and display a warning.
     if len(stats) == 1:
-        print("WARNING: Only 1 user found. Set 'METRICS_RADAR_DYNAMIC_PARAMETERS' to False to manually set the normalization ranges.")
+        print("WARNING: Only 1 user found. Set 'METRICS_RADAR: DYNAMIC_PARAMETERS' to False to manually set the normalization ranges.")
         return ranges
 
     for user_data in stats.values():
@@ -166,6 +166,7 @@ def create_activity_animation(
     *,
     activity_factor=None, 
     figure_size=(9.6, 5.4),
+    graph_color='blue',
     graph_background_color='white',
     axis_color='black',
     text_color='black',
@@ -248,7 +249,7 @@ def create_activity_animation(
     else:
         ax.xaxis.set_major_locator(plt.MultipleLocator(x_interval or max(1, len(date_list) // 10)))
 
-    line, = ax.plot([], [], marker='o', color=PARAMETERS['GRAPH_COLOR'])
+    line, = ax.plot([], [], marker='o', color=graph_color)
 
     Y = 0.90
     if show_first_message:
@@ -308,6 +309,8 @@ def create_category_histograms_animation(
     user_data, 
     animations_folder,
     *,
+    categories_dict,
+    global_limit,
     category_bar_order='ASC',
     figure_size=(9.6, 5.4),
     graph_background_color='white',
@@ -328,8 +331,6 @@ def create_category_histograms_animation(
     animation_min_frames=10,
     animation_max_frames=200
 ):
-    categories_dict = PARAMETERS['CATEGORIES']
-    global_limit = PARAMETERS['CATEGORY_GLOBAL_LIMIT']
     
     for category, limit in categories_dict.items():
         category_data = user_data['top_categories'].get(category, {})
@@ -417,6 +418,8 @@ def create_category_histograms_static(
     user_data, 
     static_graphs_folder,
     *,
+    categories_dict,
+    global_limit,
     category_bar_order='ASC',
     figure_size=(9.6, 5.4),
     graph_background_color='white',
@@ -430,8 +433,6 @@ def create_category_histograms_static(
     title='{name} - {category_name}',
     colormap='viridis'
 ):
-    categories_dict = PARAMETERS['CATEGORIES']
-    global_limit = PARAMETERS['CATEGORY_GLOBAL_LIMIT']
 
     for category, limit in categories_dict.items():
         category_data = user_data['top_categories'].get(category, {})
@@ -483,17 +484,16 @@ def create_metrics_radar_chart(
     static_graphs_folder, 
     *,
     ranges,
+    radar_metrics,
+    radar_colors,
     figure_size=(9.6, 5.4),
     frame='circle',
-    radar_colors=None,
     show_legend=True,
     title=None,
     axis_angle=45,
     axis_color='black'
-):    
-    # Define plot colors
-    colors = radar_colors or PARAMETERS['METRICS_RADAR_COLORS']
-
+):
+    
     # Extract labels and corresponding user data
     metrics = list(ranges.keys())
 
@@ -530,12 +530,12 @@ def create_metrics_radar_chart(
     ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.0], angle=axis_angle)
     
     # Plot data
-    for d, color in zip(user_data, colors):
+    for d, color in zip(user_data, radar_colors):
         ax.plot(theta, d, color=color, marker='o')
         ax.fill(theta, d, facecolor=color, alpha=0.25, label='_nolegend_')
     
     # Set variable labels
-    labels = [metric[0] for metric in PARAMETERS['METRICS_RADAR_METRICS'].values()] or metrics
+    labels = [metric[0] for metric in radar_metrics.values()] or metrics
     ax.set_varlabels(labels)
     
     # Enhance grid lines and labels
@@ -571,15 +571,15 @@ def generate_data(user_stats):
 
     # Calculate some global parameters
     if GENERATE_ACTIVITY_CHART:
-        max_activeness = max(user_stats[user_id]['ratios'].get('messages_per_day', -1) for user_id in user_ids) if PARAMETERS['ACTIVITY_SHOW_RATIOS'] else -1
+        max_activeness = max(user_stats[user_id]['ratios'].get('messages_per_day', -1) for user_id in user_ids) if ACTIVITY_PARAMS['SHOW_RATIOS'] else -1
 
     if GENERATE_METRICS_RADAR:
-        if PARAMETERS['METRICS_RADAR_DYNAMIC_PARAMETERS']:
-            metrics = PARAMETERS['METRICS_RADAR_METRICS']
+        if METRICS_RADAR_PARAMS['DYNAMIC_PARAMETERS']:
+            metrics = METRICS_RADAR_PARAMS['METRICS']
             ranges = determine_normalization_ranges(user_stats, metrics=metrics)
 
         else:
-            ranges = {metric: value[1] for metric, value in PARAMETERS['METRICS_RADAR_METRICS'].items()}
+            ranges = {metric: value[1] for metric, value in METRICS_RADAR_PARAMS['METRICS'].items()}
     
     # Generate graphs for each user
     for user_id in user_ids:
@@ -606,30 +606,31 @@ def generate_data(user_stats):
                 user_data, 
                 animations_folder, 
                 activity_factor=max_activeness,
-                figure_size=PARAMETERS['ACTIVITY_FIGURE_SIZE'],
-                graph_background_color=PARAMETERS['GRAPH_BACKGROUND_COLOR'],
-                axis_color=PARAMETERS['AXIS_COLOR'],
-                text_color=PARAMETERS['TEXT_COLOR'],
-                dynamic_parameters=PARAMETERS['ACTIVITY_DYNAMIC_PARAMETERS'],
-                x_limit=PARAMETERS['ACTIVITY_X_LIMIT'],
-                y_limit=PARAMETERS['ACTIVITY_Y_LIMIT'],
-                x_interval=PARAMETERS['ACTIVITY_X_INTERVAL'],
-                y_interval=PARAMETERS['ACTIVITY_Y_INTERVAL'],
-                x_label=PARAMETERS['ACTIVITY_X_LABEL'],
-                y_label=PARAMETERS['ACTIVITY_Y_LABEL'],
-                title=PARAMETERS['ACTIVITY_TITLE'],
-                show_dates=PARAMETERS['ACTIVITY_SHOW_DATES'],
-                axis_date_format=PARAMETERS['ACTIVITY_AXIS_DATE_FORMAT'],
-                show_first_message=PARAMETERS['ACTIVITY_SHOW_FIRST_MESSAGE'],
-                show_top_active_days=PARAMETERS['ACTIVITY_SHOW_TOP_ACTIVE_DAYS'],
-                show_ratios=PARAMETERS['ACTIVITY_SHOW_RATIOS'],
-                animation_mode=PARAMETERS['ACTIVITY_ANIMATION_MODE'],
-                animation_fixed_speed=PARAMETERS['ACTIVITY_ANIMATION_FIXED_SPEED'],
-                animation_fixed_duration=PARAMETERS['ACTIVITY_ANIMATION_FIXED_DURATION'],
-                animation_min_duration=PARAMETERS['ACTIVITY_ANIMATION_MIN_DURATION'],
-                animation_max_duration=PARAMETERS['ACTIVITY_ANIMATION_MAX_DURATION'],
-                animation_min_frames=PARAMETERS['ACTIVITY_ANIMATION_MIN_FRAMES'],
-                animation_max_frames=PARAMETERS['ACTIVITY_ANIMATION_MAX_FRAMES']
+                figure_size=ACTIVITY_PARAMS['FIGURE_SIZE'],
+                graph_color=ACTIVITY_PARAMS['GRAPH_COLOR'],
+                graph_background_color=ACTIVITY_PARAMS['GRAPH_BACKGROUND_COLOR'],
+                axis_color=ACTIVITY_PARAMS['AXIS_COLOR'],
+                text_color=ACTIVITY_PARAMS['TEXT_COLOR'],
+                dynamic_parameters=ACTIVITY_PARAMS['DYNAMIC_PARAMETERS'],
+                x_limit=ACTIVITY_PARAMS['X_LIMIT'],
+                y_limit=ACTIVITY_PARAMS['Y_LIMIT'],
+                x_interval=ACTIVITY_PARAMS['X_INTERVAL'],
+                y_interval=ACTIVITY_PARAMS['Y_INTERVAL'],
+                x_label=ACTIVITY_PARAMS['X_LABEL'],
+                y_label=ACTIVITY_PARAMS['Y_LABEL'],
+                title=ACTIVITY_PARAMS['TITLE'],
+                show_dates=ACTIVITY_PARAMS['SHOW_DATES'],
+                axis_date_format=ACTIVITY_PARAMS['AXIS_DATE_FORMAT'],
+                show_first_message=ACTIVITY_PARAMS['SHOW_FIRST_MESSAGE'],
+                show_top_active_days=ACTIVITY_PARAMS['SHOW_TOP_ACTIVE_DAYS'],
+                show_ratios=ACTIVITY_PARAMS['SHOW_RATIOS'],
+                animation_mode=ACTIVITY_PARAMS['ANIMATION_MODE'],
+                animation_fixed_speed=ACTIVITY_PARAMS['ANIMATION_FIXED_SPEED'],
+                animation_fixed_duration=ACTIVITY_PARAMS['ANIMATION_FIXED_DURATION'],
+                animation_min_duration=ACTIVITY_PARAMS['ANIMATION_MIN_DURATION'],
+                animation_max_duration=ACTIVITY_PARAMS['ANIMATION_MAX_DURATION'],
+                animation_min_frames=ACTIVITY_PARAMS['ANIMATION_MIN_FRAMES'],
+                animation_max_frames=ACTIVITY_PARAMS['ANIMATION_MAX_FRAMES']
             )
         
         if GENERATE_CATEGORY_HISTOGRAM_GIFS:
@@ -637,25 +638,27 @@ def generate_data(user_stats):
                 user_id, 
                 user_data, 
                 animations_folder,
-                category_bar_order=PARAMETERS['CATEGORY_BAR_ORDER'],
-                figure_size=PARAMETERS['FIGURE_SIZE'],
-                graph_background_color=PARAMETERS['GRAPH_BACKGROUND_COLOR'],
-                axis_color=PARAMETERS['AXIS_COLOR'],
-                text_color=PARAMETERS['TEXT_COLOR'],
-                dynamic_parameters=PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS'],
-                x_limit=PARAMETERS['CATEGORY_X_LIMIT'],
-                y_limit=PARAMETERS['CATEGORY_Y_LIMIT'],
-                x_label=PARAMETERS['CATEGORY_X_LABEL'],
-                y_label=PARAMETERS['CATEGORY_Y_LABEL'],
-                title=PARAMETERS['CATEGORY_TITLE'],
-                colormap=PARAMETERS['CATEGORY_COLORMAP'],
-                animation_mode=PARAMETERS['CATEGORY_ANIMATION_MODE'],
-                animation_fixed_speed=PARAMETERS['CATEGORY_ANIMATION_FIXED_SPEED'],
-                animation_fixed_duration=PARAMETERS['CATEGORY_ANIMATION_FIXED_DURATION'],
-                animation_min_duration=PARAMETERS['CATEGORY_ANIMATION_MIN_DURATION'],
-                animation_max_duration=PARAMETERS['CATEGORY_ANIMATION_MAX_DURATION'],
-                animation_min_frames=PARAMETERS['CATEGORY_ANIMATION_MIN_FRAMES'],
-                animation_max_frames=PARAMETERS['CATEGORY_ANIMATION_MAX_FRAMES']
+                categories_dict=CATEGORY_PARAMS['CATEGORIES'],
+                global_limit=CATEGORY_PARAMS['GLOBAL_LIMIT'],
+                category_bar_order=CATEGORY_PARAMS['BAR_ORDER'],
+                figure_size=CATEGORY_PARAMS['FIGURE_SIZE'],
+                graph_background_color=CATEGORY_PARAMS['GRAPH_BACKGROUND_COLOR'],
+                axis_color=CATEGORY_PARAMS['AXIS_COLOR'],
+                text_color=CATEGORY_PARAMS['TEXT_COLOR'],
+                dynamic_parameters=CATEGORY_PARAMS['DYNAMIC_PARAMETERS'],
+                x_limit=CATEGORY_PARAMS['X_LIMIT'],
+                y_limit=CATEGORY_PARAMS['Y_LIMIT'],
+                x_label=CATEGORY_PARAMS['X_LABEL'],
+                y_label=CATEGORY_PARAMS['Y_LABEL'],
+                title=CATEGORY_PARAMS['TITLE'],
+                colormap=CATEGORY_PARAMS['COLORMAP'],
+                animation_mode=CATEGORY_PARAMS['ANIMATION_MODE'],
+                animation_fixed_speed=CATEGORY_PARAMS['ANIMATION_FIXED_SPEED'],
+                animation_fixed_duration=CATEGORY_PARAMS['ANIMATION_FIXED_DURATION'],
+                animation_min_duration=CATEGORY_PARAMS['ANIMATION_MIN_DURATION'],
+                animation_max_duration=CATEGORY_PARAMS['ANIMATION_MAX_DURATION'],
+                animation_min_frames=CATEGORY_PARAMS['ANIMATION_MIN_FRAMES'],
+                animation_max_frames=CATEGORY_PARAMS['ANIMATION_MAX_FRAMES']
             )
 
         if GENERATE_CATEGORY_HISTOGRAM_PNGS:
@@ -663,18 +666,20 @@ def generate_data(user_stats):
                 user_id, 
                 user_data, 
                 static_graphs_folder,
-                category_bar_order=PARAMETERS['CATEGORY_BAR_ORDER'],
-                figure_size=PARAMETERS['FIGURE_SIZE'],
-                graph_background_color=PARAMETERS['GRAPH_BACKGROUND_COLOR'],
-                axis_color=PARAMETERS['AXIS_COLOR'],
-                text_color=PARAMETERS['TEXT_COLOR'],
-                dynamic_parameters=PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS'],
-                x_limit=PARAMETERS['CATEGORY_X_LIMIT'],
-                y_limit=PARAMETERS['CATEGORY_Y_LIMIT'],
-                x_label=PARAMETERS['CATEGORY_X_LABEL'],
-                y_label=PARAMETERS['CATEGORY_Y_LABEL'],
-                title=PARAMETERS['CATEGORY_TITLE'],
-                colormap=PARAMETERS['CATEGORY_COLORMAP']
+                categories_dict=CATEGORY_PARAMS['CATEGORIES'],
+                global_limit=CATEGORY_PARAMS['GLOBAL_LIMIT'],
+                category_bar_order=CATEGORY_PARAMS['BAR_ORDER'],
+                figure_size=CATEGORY_PARAMS['FIGURE_SIZE'],
+                graph_background_color=CATEGORY_PARAMS['GRAPH_BACKGROUND_COLOR'],
+                axis_color=CATEGORY_PARAMS['AXIS_COLOR'],
+                text_color=CATEGORY_PARAMS['TEXT_COLOR'],
+                dynamic_parameters=CATEGORY_PARAMS['DYNAMIC_PARAMETERS'],
+                x_limit=CATEGORY_PARAMS['X_LIMIT'],
+                y_limit=CATEGORY_PARAMS['Y_LIMIT'],
+                x_label=CATEGORY_PARAMS['X_LABEL'],
+                y_label=CATEGORY_PARAMS['Y_LABEL'],
+                title=CATEGORY_PARAMS['TITLE'],
+                colormap=CATEGORY_PARAMS['COLORMAP']
             )
         
         if GENERATE_METRICS_RADAR:
@@ -682,13 +687,14 @@ def generate_data(user_stats):
                 {user_id: user_data}, 
                 static_graphs_folder, 
                 ranges=ranges,
-                figure_size=PARAMETERS['METRICS_RADAR_FIGURE_SIZE'],
-                frame=PARAMETERS['METRICS_RADAR_FRAME'],
-                radar_colors=PARAMETERS['METRICS_RADAR_COLORS'],
-                show_legend=PARAMETERS['METRICS_RADAR_SHOW_LEGEND'],
-                title=PARAMETERS['METRICS_RADAR_TITLE'],
-                axis_angle=PARAMETERS['METRICS_RADAR_ANGLE'],
-                axis_color=PARAMETERS['METRICS_RADAR_AXIS_COLOR']
+                radar_metrics=METRICS_RADAR_PARAMS['METRICS'],
+                radar_colors=METRICS_RADAR_PARAMS['COLORS'],
+                figure_size=METRICS_RADAR_PARAMS['FIGURE_SIZE'],
+                frame=METRICS_RADAR_PARAMS['FRAME'],
+                show_legend=METRICS_RADAR_PARAMS['SHOW_LEGEND'],
+                title=METRICS_RADAR_PARAMS['TITLE'],
+                axis_angle=METRICS_RADAR_PARAMS['ANGLE'],
+                axis_color=METRICS_RADAR_PARAMS['AXIS_COLOR']
             )
 
 
