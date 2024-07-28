@@ -123,20 +123,17 @@ METRICS_RADAR_PARAMS = {
 }
 
 FEELINGS_RADAR_PARAMS = {
-    'TITLE': '{names[0]} - Feelings',  # Title of the radar chart. Can be None.
+    'TITLE': '{names[0]} - Feelings',
     'FIGURE_SIZE': (9, 9),
     'FRAME': 'polygon',  # Or 'circle'
-    'ANGLE': 2,  # Angle in degrees for the labels offset.
+    'ANGLE': 2,
     'BACKGROUND_COLOR': 'white',
     'AXIS_COLOR': 'gray',
     'TEXT_COLOR': 'black',
-    'COLORS': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'],  # For now, only the first color is used.
+    'COLORS': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'],
     'SHOW_LEGEND': True,
-    'DYNAMIC_PARAMETERS': True,  # Set to True to automatically determine the ranges for data normalization. (highly recommended)
+    'DYNAMIC_PARAMETERS': True,
     'FEELINGS': {
-        # Feeling names and their ranges for normalization.
-        # The ranges are used to normalize the data between 0 and 1.
-        # If dynamic parameters is set to True, these ranges will be ignored.
         'feeling_ratios.neutral': ('Neutral', (0, 1)),
         'feeling_ratios.joy': ('Joy', (0, 1)),
         'feeling_ratios.surprise': ('Surprise', (0, 1)),
