@@ -429,7 +429,8 @@ def save_global_stats(global_stats: dict):
         'loud_message_count': global_stats['loud_message_count'],
         'curse_count': global_stats['curse_count'],
         **({'ratios': global_stats['ratios']} if CALCULATE_GLOBAL_RATIOS else {}),
-        **({'feelings': {k: (v, global_stats['feeling_ratios'][k]) for k, v in global_stats['messages_by_feeling'].items()}} if ANALYZE_SENTIMENTS else {}),
+        **({'messages_by_feeling': dict(global_stats['messages_by_feeling'])} if ANALYZE_SENTIMENTS else {}),
+        **({'feeling_ratios': dict(global_stats['feeling_ratios'])} if ANALYZE_SENTIMENTS else {}),
         'top_reactions': dict(global_stats['top_reactions'].most_common(GLOBAL_REACTION_LIMIT)),
         'top_active_days': dict(global_stats['daily_message_counter'].most_common(GLOBAL_ACTIVE_DAYS_LIMIT)),
         'top_active_users': {user_id: {'name': user.name, 'messages_per_active_day': user.messages_per_active_day, 'message_count': user.message_count, 'word_count': user.word_count, 'letter_count': user.letter_count} for user_id, user in limited_top_active_users},
@@ -471,7 +472,8 @@ def save_user_stats(user_stats: dict[int, User]):
                     'loudness': user.loudness,
                     'naughtiness': user.naughtiness,
                 }} if CALCULATE_USER_RATIOS else {}),
-                **({'feelings': {k: (v, user.feeling_ratios[k]) for k, v in user.messages_by_feeling.items()}} if ANALYZE_SENTIMENTS else {}),
+                **({'messages_by_feeling': dict(user.messages_by_feeling)} if ANALYZE_SENTIMENTS else {}),
+                **({'feeling_ratios': dict(user.feeling_ratios)} if ANALYZE_SENTIMENTS else {}),
                 'top_reactions_given': dict(user.reactions_given.most_common(USER_REACTION_LIMIT)),
                 'top_reactions_received': dict(user.reactions_received.most_common(USER_REACTION_LIMIT)),
                 'top_active_days': dict(user.daily_message_counter.most_common(USER_ACTIVE_DAYS_LIMIT)),
@@ -506,7 +508,8 @@ def save_user_stats(user_stats: dict[int, User]):
             rr_ratio REAL,
             loudness REAL,
             naughtiness REAL,
-            feelings TEXT,
+            messages_by_feeling TEXT,
+            feelings_ratios TEXT,
             top_reactions_given TEXT,
             top_reactions_received TEXT,
             top_active_days TEXT,
@@ -517,7 +520,7 @@ def save_user_stats(user_stats: dict[int, User]):
 
     for user_id, user in user_stats.items():
         cursor.execute('''
-            INSERT OR REPLACE INTO user_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO user_stats VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             user_id, user.name, 
             user.message_count, user.word_count, user.letter_count, user.media_count, 
@@ -528,7 +531,8 @@ def save_user_stats(user_stats: dict[int, User]):
             user.messages_per_day, user.words_per_message, user.media_per_message, 
             user.rg_ratio, user.rr_ratio,
             user.loudness, user.naughtiness,
-            json.dumps({k: (v, user.feeling_ratios[k]) for k, v in user.messages_by_feeling.items()}),
+            json.dumps(dict(user.messages_by_feeling)),
+            json.dumps(dict(user.feeling_ratios)),
             json.dumps(dict(user.reactions_given.most_common(USER_REACTION_LIMIT))),
             json.dumps(dict(user.reactions_received.most_common(USER_REACTION_LIMIT))),
             json.dumps(dict(user.daily_message_counter.most_common(USER_ACTIVE_DAYS_LIMIT))),
@@ -550,7 +554,7 @@ if __name__ == '__main__':
         print('\n[ Program Interrupted. ]')
 
     else:
-        print('\n[ Data Collection Completed. ]')
+        print('[ Data Collection Completed. ]')
 
     end = time.time()
     print(f'Execution Time: {end - start:.2f} seconds')
