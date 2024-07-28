@@ -16,6 +16,7 @@ GENERATE_ACTIVITY_CHART = True
 GENERATE_CATEGORY_HISTOGRAM_GIFS = True
 GENERATE_CATEGORY_HISTOGRAM_PNGS = True
 GENERATE_METRICS_RADAR = True
+GENERATE_FEELINGS_RADAR = True
 
 # Generate graphs for all users in the list. If the list is empty, generate graphs for all users in the json file.
 GENERATE_FROM_LIST = []
