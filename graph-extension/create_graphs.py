@@ -54,18 +54,18 @@ def determine_normalization_ranges(stats, *, metrics):
     return ranges
 
 
-def determine_histogram_bar_order(data, limit):
+def determine_histogram_bar_order(data, limit, category_bar_order='ASC'):
     """Determine the order of bars in the histogram. Not that the data show is still the top N entries."""
 
     data = list(data)[:limit]
 
-    if PARAMETERS['CATEGORY_BAR_ORDER'] == 'ASC':
+    if category_bar_order == 'ASC':
         data = sorted(data, key=lambda x: x[1])
 
-    elif PARAMETERS['CATEGORY_BAR_ORDER'] == 'DESC':
+    elif category_bar_order == 'DESC':
         data = sorted(data, key=lambda x: x[1], reverse=True)
 
-    elif PARAMETERS['CATEGORY_BAR_ORDER'] == 'ALPHABETICAL':
+    elif category_bar_order == 'ALPHABETICAL':
         data = sorted(data, key=lambda x: x[0])
 
     return zip(*data)
@@ -159,7 +159,37 @@ def radar_factory(num_vars, frame='circle'):
     return theta
 
 
-def create_activity_animation(user_id, user_data, animations_folder, *, activity_factor=None):    
+def create_activity_animation(
+    user_id, 
+    user_data, 
+    animations_folder,
+    *,
+    activity_factor=None, 
+    figure_size=(9.6, 5.4),
+    graph_background_color='white',
+    axis_color='black',
+    text_color='black',
+    dynamic_parameters=True,
+    x_limit=None,
+    y_limit=None,
+    x_interval=None,
+    y_interval=None,
+    x_label=None,
+    y_label='Amount of Messages Sent',
+    title='{name} - Activity Over Time',
+    show_dates=True,
+    axis_date_format='%Y-%m',
+    show_first_message=True,
+    show_top_active_days=3,
+    show_ratios=True,
+    animation_mode='DURATION',
+    animation_fixed_speed=100,
+    animation_fixed_duration=12000,
+    animation_min_duration=1000,
+    animation_max_duration=12000,
+    animation_min_frames=10,
+    animation_max_frames=200
+):    
     # Getting the activity data
     activity_data = user_data['top_active_days']
     activity_factor = activity_factor or 1
@@ -178,60 +208,60 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
         current_date += timedelta(days=1)
     
     # Figure and axes
-    fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
-    fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
+    fig, ax = plt.subplots(figsize=figure_size)
+    fig.patch.set_facecolor(graph_background_color)
 
-    ax.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
-    ax.spines['bottom'].set_color(PARAMETERS['AXIS_COLOR'])
-    ax.spines['left'].set_color(PARAMETERS['AXIS_COLOR'])
-    ax.tick_params(axis='x', colors=PARAMETERS['AXIS_COLOR'])
-    ax.tick_params(axis='y', colors=PARAMETERS['AXIS_COLOR'])
-    ax.yaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
-    ax.xaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
-    ax.title.set_color(PARAMETERS['TEXT_COLOR'])
+    ax.set_facecolor(graph_background_color)
+    ax.spines['bottom'].set_color(axis_color)
+    ax.spines['left'].set_color(axis_color)
+    ax.tick_params(axis='x', colors=axis_color)
+    ax.tick_params(axis='y', colors=axis_color)
+    ax.yaxis.label.set_color(text_color)
+    ax.xaxis.label.set_color(text_color)
+    ax.title.set_color(text_color)
     
     # Set the limits and labels
-    if PARAMETERS['ACTIVITY_DYNAMIC_PARAMETERS']:
+    if dynamic_parameters:
         ax.set_xlim(0, len(date_list))
         ax.set_ylim(0, int(max(message_counts) * 1.05))
         ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
         ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
 
     else:
-        ax.set_xlim(PARAMETERS['ACTIVITY_X_LIMIT'])
-        ax.set_ylim(PARAMETERS['ACTIVITY_Y_LIMIT'])
+        ax.set_xlim(x_limit)
+        ax.set_ylim(y_limit)
 
-        if PARAMETERS['ACTIVITY_X_INTERVAL']:
-            ax.xaxis.set_major_locator(plt.MultipleLocator(PARAMETERS['ACTIVITY_X_INTERVAL']))
+        if x_interval:
+            ax.xaxis.set_major_locator(plt.MultipleLocator(x_interval))
 
-        if PARAMETERS['ACTIVITY_Y_INTERVAL']:
-            ax.yaxis.set_major_locator(plt.MultipleLocator(PARAMETERS['ACTIVITY_Y_INTERVAL']))
+        if y_interval:
+            ax.yaxis.set_major_locator(plt.MultipleLocator(y_interval))
 
-    ax.set_xlabel(PARAMETERS['ACTIVITY_X_LABEL'])
-    ax.set_ylabel(PARAMETERS['ACTIVITY_Y_LABEL'])
-    ax.set_title(PARAMETERS['ACTIVITY_TITLE'].format(name=user_data['name'], id=user_id))
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_title(title.format(name=user_data['name'], id=user_id))
 
-    if PARAMETERS['ACTIVITY_SHOW_DATES']:
-        ax.set_xticks(range(0, len(date_list), PARAMETERS['ACTIVITY_X_INTERVAL'] or max(1, len(date_list) // 10)))
-        ax.set_xticklabels([(start_date_dt + timedelta(days=i)).strftime(PARAMETERS['ACTIVITY_AXIS_DATE_FORMAT']) for i in range(0, len(date_list), PARAMETERS['ACTIVITY_X_INTERVAL'] or max(1, len(date_list) // 10))], rotation=45)
+    if show_dates:
+        ax.set_xticks(range(0, len(date_list), x_interval or max(1, len(date_list) // 10)))
+        ax.set_xticklabels([(start_date_dt + timedelta(days=i)).strftime(axis_date_format) for i in range(0, len(date_list), x_interval or max(1, len(date_list) // 10))], rotation=45)
 
     else:
-        ax.xaxis.set_major_locator(plt.MultipleLocator(PARAMETERS['ACTIVITY_X_INTERVAL'] or max(1, len(date_list) // 10)))
+        ax.xaxis.set_major_locator(plt.MultipleLocator(x_interval or max(1, len(date_list) // 10)))
 
     line, = ax.plot([], [], marker='o', color=PARAMETERS['GRAPH_COLOR'])
 
     Y = 0.90
-    if PARAMETERS['ACTIVITY_SHOW_FIRST_MESSAGE']:
-        plt.figtext(0.88, (Y:=Y-0.05), f"First Message: {start_date_dt.strftime('%Y-%m-%d')}", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+    if show_first_message:
+        plt.figtext(0.88, (Y:=Y-0.05), f"First Message: {start_date_dt.strftime('%Y-%m-%d')}", ha='right', va='top', fontsize=10, color=text_color)
 
-    if (N:=PARAMETERS['ACTIVITY_SHOW_TOP_ACTIVE_DAYS']):
+    if (N:=show_top_active_days):
         most_active_days = sorted(activity_data, key=activity_data.get, reverse=True)[:min(N, len(activity_data))]
         for i, day in enumerate(most_active_days, 1):
-            plt.figtext(0.88, (Y:=Y-0.05), f"#{i}: {day} ({activity_data[day]} messages)", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+            plt.figtext(0.88, (Y:=Y-0.05), f"#{i}: {day} ({activity_data[day]} messages)", ha='right', va='top', fontsize=10, color=text_color)
 
-    if PARAMETERS['ACTIVITY_SHOW_RATIOS'] and activity_factor != -1:
-        plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['ratios']['messages_per_day'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
-        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['ratios']['messages_per_day'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=PARAMETERS['TEXT_COLOR'])
+    if show_ratios and activity_factor != -1:
+        plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['ratios']['messages_per_day'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=text_color)
+        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['ratios']['messages_per_day'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=text_color)
 
     def init():
         line.set_data([], [])
@@ -241,17 +271,17 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
         line.set_data(date_list[:frame+1], message_counts[:frame+1])
         return line,
 
-    if PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'DURATION':
-        interval = PARAMETERS['ACTIVITY_ANIMATION_FIXED_DURATION'] / len(date_list)
+    if animation_mode == 'DURATION':
+        interval = animation_fixed_duration / len(date_list)
 
-    elif PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'SPEED':
-        interval = PARAMETERS['ACTIVITY_ANIMATION_FIXED_SPEED']
+    elif animation_mode == 'SPEED':
+        interval = animation_fixed_speed
 
-    elif PARAMETERS['ACTIVITY_ANIMATION_MODE'] == 'AUTO':
-        MIN_FRAMES = PARAMETERS['ACTIVITY_ANIMATION_MIN_FRAMES']
-        MAX_FRAMES = PARAMETERS['ACTIVITY_ANIMATION_MAX_FRAMES']
-        MIN_DURATION = PARAMETERS['ACTIVITY_ANIMATION_MIN_DURATION']
-        MAX_DURATION = PARAMETERS['ACTIVITY_ANIMATION_MAX_DURATION']
+    elif animation_mode == 'AUTO':
+        MIN_FRAMES = animation_min_frames
+        MAX_FRAMES = animation_max_frames
+        MIN_DURATION = animation_min_duration
+        MAX_DURATION = animation_max_duration
 
         frame_count = len(date_list)
         clamped_frame_count = max(MIN_FRAMES, min(MAX_FRAMES, frame_count))
@@ -260,7 +290,7 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
         interval = total_duration / frame_count
 
     else:
-        raise ValueError(f"Invalid animation mode: {PARAMETERS['ACTIVITY_ANIMATION_MODE']}")
+        raise ValueError(f"Invalid animation mode: {animation_mode}")
     
     ani = animation.FuncAnimation(fig, update, frames=len(date_list), init_func=init, interval=interval, blit=True)
     
@@ -273,7 +303,31 @@ def create_activity_animation(user_id, user_data, animations_folder, *, activity
         plt.close(fig)
 
 
-def create_category_histograms_animation(user_id, user_data, animations_folder):
+def create_category_histograms_animation(
+    user_id, 
+    user_data, 
+    animations_folder,
+    *,
+    category_bar_order='ASC',
+    figure_size=(9.6, 5.4),
+    graph_background_color='white',
+    axis_color='black',
+    text_color='black',
+    dynamic_parameters=True,
+    x_limit=None,
+    y_limit=None,
+    x_label=None,
+    y_label=None,
+    title='{name} - {category_name}',
+    colormap='viridis',
+    animation_mode='DURATION',
+    animation_fixed_speed=100,
+    animation_fixed_duration=12000,
+    animation_min_duration=1000,
+    animation_max_duration=12000,
+    animation_min_frames=10,
+    animation_max_frames=200
+):
     categories_dict = PARAMETERS['CATEGORIES']
     global_limit = PARAMETERS['CATEGORY_GLOBAL_LIMIT']
     
@@ -284,30 +338,30 @@ def create_category_histograms_animation(user_id, user_data, animations_folder):
             continue
 
         entry_limit = limit if limit != -1 else global_limit
-        labels, counts = determine_histogram_bar_order(category_data.items(), entry_limit)
+        labels, counts = determine_histogram_bar_order(category_data.items(), entry_limit, category_bar_order)
         
-        fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
-        fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
+        fig, ax = plt.subplots(figsize=figure_size)
+        fig.patch.set_facecolor(graph_background_color)
 
-        ax.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
-        ax.spines['bottom'].set_color(PARAMETERS['AXIS_COLOR'])
-        ax.spines['left'].set_color(PARAMETERS['AXIS_COLOR'])
-        ax.tick_params(axis='x', colors=PARAMETERS['AXIS_COLOR'])
-        ax.tick_params(axis='y', colors=PARAMETERS['AXIS_COLOR'])
-        ax.yaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
-        ax.xaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
-        ax.title.set_color(PARAMETERS['TEXT_COLOR'])
+        ax.set_facecolor(graph_background_color)
+        ax.spines['bottom'].set_color(axis_color)
+        ax.spines['left'].set_color(axis_color)
+        ax.tick_params(axis='x', colors=axis_color)
+        ax.tick_params(axis='y', colors=axis_color)
+        ax.yaxis.label.set_color(text_color)
+        ax.xaxis.label.set_color(text_color)
+        ax.title.set_color(text_color)
 
-        ax.set_xlabel(PARAMETERS['CATEGORY_X_LABEL'])
-        ax.set_ylabel(PARAMETERS['CATEGORY_Y_LABEL'])
-        ax.set_title(PARAMETERS['CATEGORY_TITLE'].format(name=user_data['name'], id=user_id, category_name=category))
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_title(title.format(name=user_data['name'], id=user_id, category_name=category))
 
-        if PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS']:
+        if dynamic_parameters:
             ax.set_xlim(-0.5, len(labels) - 0.5)
             ax.set_ylim(0, max(counts) + 10)
         else:
-            ax.set_xlim(PARAMETERS['CATEGORY_X_LIMIT'])
-            ax.set_ylim(PARAMETERS['CATEGORY_Y_LIMIT'])
+            ax.set_xlim(x_limit)
+            ax.set_ylim(y_limit)
 
         bars = ax.bar(labels, [0] * len(labels), color='green')
 
@@ -321,20 +375,20 @@ def create_category_histograms_animation(user_id, user_data, animations_folder):
                 current_height = min(frame, counts[i])
                 bar.set_height(current_height)
                 color_value = current_height / max(counts)
-                bar.set_color(plt.get_cmap(PARAMETERS['CATEGORY_COLORMAP'])(color_value))
+                bar.set_color(plt.get_cmap(colormap)(color_value))
             return bars,
     
-        if PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'DURATION':
-            interval = PARAMETERS['CATEGORY_ANIMATION_FIXED_DURATION'] / max(counts)
+        if animation_mode == 'DURATION':
+            interval = animation_fixed_duration / max(counts)
 
-        elif PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'SPEED':
-            interval = PARAMETERS['CATEGORY_ANIMATION_FIXED_SPEED']
+        elif animation_mode == 'SPEED':
+            interval = animation_fixed_speed
 
-        elif PARAMETERS['CATEGORY_ANIMATION_MODE'] == 'AUTO':
-            MIN_FRAMES = PARAMETERS['CATEGORY_ANIMATION_MIN_FRAMES']
-            MAX_FRAMES = PARAMETERS['CATEGORY_ANIMATION_MAX_FRAMES']
-            MIN_DURATION = PARAMETERS['CATEGORY_ANIMATION_MIN_DURATION']
-            MAX_DURATION = PARAMETERS['CATEGORY_ANIMATION_MAX_DURATION']
+        elif animation_mode == 'AUTO':
+            MIN_FRAMES = animation_min_frames
+            MAX_FRAMES = animation_max_frames
+            MIN_DURATION = animation_min_duration
+            MAX_DURATION = animation_max_duration
 
             frame_count = max(counts)
             clamped_frame_count = max(MIN_FRAMES, min(MAX_FRAMES, frame_count))
@@ -343,7 +397,7 @@ def create_category_histograms_animation(user_id, user_data, animations_folder):
             interval = total_duration / frame_count
 
         else:
-            raise ValueError(f"Invalid animation mode: {PARAMETERS['CATEGORY_ANIMATION_MODE']}")
+            raise ValueError(f"Invalid animation mode: {animation_mode}")
 
         ani = animation.FuncAnimation(fig, update, frames=max(counts) + 1, init_func=init, interval=interval)
 
@@ -358,7 +412,24 @@ def create_category_histograms_animation(user_id, user_data, animations_folder):
             plt.close(fig)
 
 
-def create_category_histograms_static(user_id, user_data, static_graphs_folder):
+def create_category_histograms_static(
+    user_id, 
+    user_data, 
+    static_graphs_folder,
+    *,
+    category_bar_order='ASC',
+    figure_size=(9.6, 5.4),
+    graph_background_color='white',
+    axis_color='black',
+    text_color='black',
+    dynamic_parameters=True,
+    x_limit=None,
+    y_limit=None,
+    x_label=None,
+    y_label=None,
+    title='{name} - {category_name}',
+    colormap='viridis'
+):
     categories_dict = PARAMETERS['CATEGORIES']
     global_limit = PARAMETERS['CATEGORY_GLOBAL_LIMIT']
 
@@ -369,32 +440,32 @@ def create_category_histograms_static(user_id, user_data, static_graphs_folder):
             continue
 
         entry_limit = limit if limit != -1 else global_limit
-        labels, counts = determine_histogram_bar_order(category_data.items(), entry_limit)
+        labels, counts = determine_histogram_bar_order(category_data.items(), entry_limit, category_bar_order)
 
-        fig, ax = plt.subplots(figsize=PARAMETERS['FIGURE_SIZE'])
-        fig.patch.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
+        fig, ax = plt.subplots(figsize=figure_size)
+        fig.patch.set_facecolor(graph_background_color)
 
-        ax.set_facecolor(PARAMETERS['GRAPH_BACKGROUND_COLOR'])
-        ax.spines['bottom'].set_color(PARAMETERS['AXIS_COLOR'])
-        ax.spines['left'].set_color(PARAMETERS['AXIS_COLOR'])
-        ax.tick_params(axis='x', colors=PARAMETERS['AXIS_COLOR'])
-        ax.tick_params(axis='y', colors=PARAMETERS['AXIS_COLOR'])
-        ax.yaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
-        ax.xaxis.label.set_color(PARAMETERS['TEXT_COLOR'])
-        ax.title.set_color(PARAMETERS['TEXT_COLOR'])
+        ax.set_facecolor(graph_background_color)
+        ax.spines['bottom'].set_color(axis_color)
+        ax.spines['left'].set_color(axis_color)
+        ax.tick_params(axis='x', colors=axis_color)
+        ax.tick_params(axis='y', colors=axis_color)
+        ax.yaxis.label.set_color(text_color)
+        ax.xaxis.label.set_color(text_color)
+        ax.title.set_color(text_color)
 
-        ax.set_xlabel(PARAMETERS['CATEGORY_X_LABEL'])
-        ax.set_ylabel(PARAMETERS['CATEGORY_Y_LABEL'])
-        ax.set_title(PARAMETERS['CATEGORY_TITLE'].format(name=user_data['name'], id=user_id, category_name=category))
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_title(title.format(name=user_data['name'], id=user_id, category_name=category))
 
-        if PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS']:
+        if dynamic_parameters:
             ax.set_xlim(-0.5, len(labels) - 0.5)
             ax.set_ylim(0, max(counts) + 10)
         else:
-            ax.set_xlim(PARAMETERS['CATEGORY_X_LIMIT'])
-            ax.set_ylim(PARAMETERS['CATEGORY_Y_LIMIT'])
+            ax.set_xlim(x_limit)
+            ax.set_ylim(y_limit)
 
-        bars = ax.bar(labels, counts, color=[plt.get_cmap(PARAMETERS['CATEGORY_COLORMAP'])(count / max(counts)) for count in counts])
+        bars = ax.bar(labels, counts, color=[plt.get_cmap(colormap)(count / max(counts)) for count in counts])
 
         if SHOW_PLOTS:
             plt.show()
@@ -407,9 +478,21 @@ def create_category_histograms_static(user_id, user_data, static_graphs_folder):
             plt.close(fig)
 
 
-def create_metrics_radar_chart(data, static_graphs_folder, *, ranges):    
+def create_metrics_radar_chart(
+    data, 
+    static_graphs_folder, 
+    *,
+    ranges,
+    figure_size=(9.6, 5.4),
+    frame='circle',
+    radar_colors=None,
+    show_legend=True,
+    title=None,
+    axis_angle=45,
+    axis_color='black'
+):    
     # Define plot colors
-    colors = PARAMETERS['METRICS_RADAR_COLORS']
+    colors = radar_colors or PARAMETERS['METRICS_RADAR_COLORS']
 
     # Extract labels and corresponding user data
     metrics = list(ranges.keys())
@@ -440,11 +523,11 @@ def create_metrics_radar_chart(data, static_graphs_folder, *, ranges):
         
     # Create radar chart
     N = len(metrics)
-    theta = radar_factory(N, frame=PARAMETERS['METRICS_RADAR_FRAME'])
+    theta = radar_factory(N, frame=frame)
     
-    fig, ax = plt.subplots(figsize=PARAMETERS['METRICS_RADAR_FIGURE_SIZE'], subplot_kw=dict(projection='radar'))
+    fig, ax = plt.subplots(figsize=figure_size, subplot_kw=dict(projection='radar'))
     fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
-    ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.0], angle=PARAMETERS['METRICS_RADAR_ANGLE'])
+    ax.set_rgrids([0.2, 0.4, 0.6, 0.8, 1.0], angle=axis_angle)
     
     # Plot data
     for d, color in zip(user_data, colors):
@@ -456,19 +539,19 @@ def create_metrics_radar_chart(data, static_graphs_folder, *, ranges):
     ax.set_varlabels(labels)
     
     # Enhance grid lines and labels
-    ax.yaxis.grid(True, color=PARAMETERS['METRICS_RADAR_AXIS_COLOR'], linestyle='--', linewidth=0.5)
-    ax.xaxis.grid(True, color=PARAMETERS['METRICS_RADAR_AXIS_COLOR'], linestyle='--', linewidth=0.5)
-    ax.tick_params(axis='y', labelsize=10, color=PARAMETERS['METRICS_RADAR_AXIS_COLOR'])
+    ax.yaxis.grid(True, color=axis_color, linestyle='--', linewidth=0.5)
+    ax.xaxis.grid(True, color=axis_color, linestyle='--', linewidth=0.5)
+    ax.tick_params(axis='y', labelsize=10, color=axis_color)
     
     names = [user_data['name'] for user_data in data.values()]
 
     # Add legend
-    if PARAMETERS['METRICS_RADAR_SHOW_LEGEND']:
+    if show_legend:
         ax.legend(names, loc=(0.9, .95), labelspacing=0.1, fontsize='small')
     
     # Add title
-    if PARAMETERS['METRICS_RADAR_TITLE']:
-        fig.text(0.515, 0.925, PARAMETERS['METRICS_RADAR_TITLE'].format(names=names), horizontalalignment='center', color='black', weight='bold', size='large')
+    if title:
+        fig.text(0.515, 0.925, title.format(names=names), horizontalalignment='center', color='black', weight='bold', size='large')
     
     if SHOW_PLOTS:
         plt.show()
@@ -487,7 +570,8 @@ def generate_data(user_stats):
         user_ids = [user_id for user_id in user_stats.keys() if user_id in GENERATE_FROM_LIST]
 
     # Calculate some global parameters
-    max_activeness = max(user_stats[user_id]['ratios'].get('messages_per_day', -1) for user_id in user_ids) if PARAMETERS['ACTIVITY_SHOW_RATIOS'] else -1
+    if GENERATE_ACTIVITY_CHART:
+        max_activeness = max(user_stats[user_id]['ratios'].get('messages_per_day', -1) for user_id in user_ids) if PARAMETERS['ACTIVITY_SHOW_RATIOS'] else -1
 
     if GENERATE_METRICS_RADAR:
         if PARAMETERS['METRICS_RADAR_DYNAMIC_PARAMETERS']:
@@ -497,6 +581,7 @@ def generate_data(user_stats):
         else:
             ranges = {metric: value[1] for metric, value in PARAMETERS['METRICS_RADAR_METRICS'].items()}
     
+    # Generate graphs for each user
     for user_id in user_ids:
         user_data = user_stats[user_id]
         user_name = user_data['name']
@@ -516,16 +601,95 @@ def generate_data(user_stats):
             os.makedirs(static_graphs_folder)
         
         if GENERATE_ACTIVITY_CHART:
-            create_activity_animation(user_id, user_data, animations_folder, activity_factor=max_activeness)
+            create_activity_animation(
+                user_id, 
+                user_data, 
+                animations_folder, 
+                activity_factor=max_activeness,
+                figure_size=PARAMETERS['ACTIVITY_FIGURE_SIZE'],
+                graph_background_color=PARAMETERS['GRAPH_BACKGROUND_COLOR'],
+                axis_color=PARAMETERS['AXIS_COLOR'],
+                text_color=PARAMETERS['TEXT_COLOR'],
+                dynamic_parameters=PARAMETERS['ACTIVITY_DYNAMIC_PARAMETERS'],
+                x_limit=PARAMETERS['ACTIVITY_X_LIMIT'],
+                y_limit=PARAMETERS['ACTIVITY_Y_LIMIT'],
+                x_interval=PARAMETERS['ACTIVITY_X_INTERVAL'],
+                y_interval=PARAMETERS['ACTIVITY_Y_INTERVAL'],
+                x_label=PARAMETERS['ACTIVITY_X_LABEL'],
+                y_label=PARAMETERS['ACTIVITY_Y_LABEL'],
+                title=PARAMETERS['ACTIVITY_TITLE'],
+                show_dates=PARAMETERS['ACTIVITY_SHOW_DATES'],
+                axis_date_format=PARAMETERS['ACTIVITY_AXIS_DATE_FORMAT'],
+                show_first_message=PARAMETERS['ACTIVITY_SHOW_FIRST_MESSAGE'],
+                show_top_active_days=PARAMETERS['ACTIVITY_SHOW_TOP_ACTIVE_DAYS'],
+                show_ratios=PARAMETERS['ACTIVITY_SHOW_RATIOS'],
+                animation_mode=PARAMETERS['ACTIVITY_ANIMATION_MODE'],
+                animation_fixed_speed=PARAMETERS['ACTIVITY_ANIMATION_FIXED_SPEED'],
+                animation_fixed_duration=PARAMETERS['ACTIVITY_ANIMATION_FIXED_DURATION'],
+                animation_min_duration=PARAMETERS['ACTIVITY_ANIMATION_MIN_DURATION'],
+                animation_max_duration=PARAMETERS['ACTIVITY_ANIMATION_MAX_DURATION'],
+                animation_min_frames=PARAMETERS['ACTIVITY_ANIMATION_MIN_FRAMES'],
+                animation_max_frames=PARAMETERS['ACTIVITY_ANIMATION_MAX_FRAMES']
+            )
         
         if GENERATE_CATEGORY_HISTOGRAM_GIFS:
-            create_category_histograms_animation(user_id, user_data, animations_folder)
+            create_category_histograms_animation(
+                user_id, 
+                user_data, 
+                animations_folder,
+                category_bar_order=PARAMETERS['CATEGORY_BAR_ORDER'],
+                figure_size=PARAMETERS['FIGURE_SIZE'],
+                graph_background_color=PARAMETERS['GRAPH_BACKGROUND_COLOR'],
+                axis_color=PARAMETERS['AXIS_COLOR'],
+                text_color=PARAMETERS['TEXT_COLOR'],
+                dynamic_parameters=PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS'],
+                x_limit=PARAMETERS['CATEGORY_X_LIMIT'],
+                y_limit=PARAMETERS['CATEGORY_Y_LIMIT'],
+                x_label=PARAMETERS['CATEGORY_X_LABEL'],
+                y_label=PARAMETERS['CATEGORY_Y_LABEL'],
+                title=PARAMETERS['CATEGORY_TITLE'],
+                colormap=PARAMETERS['CATEGORY_COLORMAP'],
+                animation_mode=PARAMETERS['CATEGORY_ANIMATION_MODE'],
+                animation_fixed_speed=PARAMETERS['CATEGORY_ANIMATION_FIXED_SPEED'],
+                animation_fixed_duration=PARAMETERS['CATEGORY_ANIMATION_FIXED_DURATION'],
+                animation_min_duration=PARAMETERS['CATEGORY_ANIMATION_MIN_DURATION'],
+                animation_max_duration=PARAMETERS['CATEGORY_ANIMATION_MAX_DURATION'],
+                animation_min_frames=PARAMETERS['CATEGORY_ANIMATION_MIN_FRAMES'],
+                animation_max_frames=PARAMETERS['CATEGORY_ANIMATION_MAX_FRAMES']
+            )
 
         if GENERATE_CATEGORY_HISTOGRAM_PNGS:
-            create_category_histograms_static(user_id, user_data, static_graphs_folder)
+            create_category_histograms_static(
+                user_id, 
+                user_data, 
+                static_graphs_folder,
+                category_bar_order=PARAMETERS['CATEGORY_BAR_ORDER'],
+                figure_size=PARAMETERS['FIGURE_SIZE'],
+                graph_background_color=PARAMETERS['GRAPH_BACKGROUND_COLOR'],
+                axis_color=PARAMETERS['AXIS_COLOR'],
+                text_color=PARAMETERS['TEXT_COLOR'],
+                dynamic_parameters=PARAMETERS['CATEGORY_DYNAMIC_PARAMETERS'],
+                x_limit=PARAMETERS['CATEGORY_X_LIMIT'],
+                y_limit=PARAMETERS['CATEGORY_Y_LIMIT'],
+                x_label=PARAMETERS['CATEGORY_X_LABEL'],
+                y_label=PARAMETERS['CATEGORY_Y_LABEL'],
+                title=PARAMETERS['CATEGORY_TITLE'],
+                colormap=PARAMETERS['CATEGORY_COLORMAP']
+            )
         
         if GENERATE_METRICS_RADAR:
-            create_metrics_radar_chart({user_id: user_data}, static_graphs_folder, ranges=ranges)
+            create_metrics_radar_chart(
+                {user_id: user_data}, 
+                static_graphs_folder, 
+                ranges=ranges,
+                figure_size=PARAMETERS['METRICS_RADAR_FIGURE_SIZE'],
+                frame=PARAMETERS['METRICS_RADAR_FRAME'],
+                radar_colors=PARAMETERS['METRICS_RADAR_COLORS'],
+                show_legend=PARAMETERS['METRICS_RADAR_SHOW_LEGEND'],
+                title=PARAMETERS['METRICS_RADAR_TITLE'],
+                axis_angle=PARAMETERS['METRICS_RADAR_ANGLE'],
+                axis_color=PARAMETERS['METRICS_RADAR_AXIS_COLOR']
+            )
 
 
 if __name__ == '__main__':
