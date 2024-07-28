@@ -20,66 +20,70 @@ GENERATE_METRICS_RADAR = True
 # Generate graphs for all users in the list. If the list is empty, generate graphs for all users in the json file.
 GENERATE_FROM_LIST = []
 
-# Parameters for all graphs.
-PARAMETERS = {
-    # Global params
+ACTIVITY_PARAMS = {
     'FIGURE_SIZE': (9.6, 5.4),
     'GRAPH_COLOR': 'blue',
     'GRAPH_BACKGROUND_COLOR': 'white',
     'AXIS_COLOR': 'black',
     'TEXT_COLOR': 'black',
 
-    # Params for the activity-time graph
-    'ACTIVITY_TITLE': 'Activity-Time Graph for {name} (ID: {id})',
+    'TITLE': '{name} - Activity Over Time',  # Can be set to None. {name} is optional.
+    'SHOW_FIRST_MESSAGE': True,  # Show the first message date on the analytics.
+    'SHOW_TOP_ACTIVE_DAYS': 3,  # Amount of most active days to show on the analytics.
+    'SHOW_RATIOS': True,  # Show ratios such as messages per day and words per message.
 
-    'ACTIVITY_SHOW_FIRST_MESSAGE': True,  # Show the first message date on the analytics.
-    'ACTIVITY_SHOW_TOP_ACTIVE_DAYS': 3,  # Amount of most active days to show on the analytics.
-    'ACTIVITY_SHOW_RATIOS': True,  # Show the ratios of messages sent by the user.
+    'X_LABEL': None,
+    'Y_LABEL': "Amount of Messages Sent",
 
-    'ACTIVITY_X_LABEL': "Days",
-    'ACTIVITY_Y_LABEL': "Messages Sent",
-    'ACTIVITY_SHOW_DATES': True,  # Show dates on the x-axis, set to False to only show days as integers.
-    'ACTIVITY_AXIS_DATE_FORMAT': '%Y-%m',  # Format for the dates on the x-axis.
+    'SHOW_DATES': True,  # Show dates on the x-axis, set to False to only show days as integers.
+    'AXIS_DATE_FORMAT': '%Y-%m',  # Format for the dates on the x-axis.
 
-    'ACTIVITY_DYNAMIC_PARAMETERS': True,  # Set to True to automatically set the limits and intervals. The 4 parameters below will be ignored.
-    'ACTIVITY_X_LIMIT': None,  # None or a tuple with the limits for the x-axis.
-    'ACTIVITY_Y_LIMIT': None,  # None or a tuple with the limits for the y-axis.
-    'ACTIVITY_X_INTERVAL': None,  # None or an integer with the interval for the x-axis.
-    'ACTIVITY_Y_INTERVAL': None,  # None or an integer with the interval for the y-axis.
-
-    'ACTIVITY_ANIMATION_MODE': 'DURATION',  # 'DURATION' or 'SPEED' for exact time or speed between frames, 'AUTO' for a linear interpolation between the min and max values.
-    'ACTIVITY_ANIMATION_FIXED_SPEED': 100,  # Time in milliseconds between each frame of the animation, ignored if mode is not 'SPEED'.
-    'ACTIVITY_ANIMATION_FIXED_DURATION': 10000,  # Time in milliseconds for the whole animation, ignored if mode is not 'DURATION'.
-
+    'DYNAMIC_PARAMETERS': True,  # Set to True to automatically set the limits and intervals. The 4 parameters below will be ignored.
+    'X_LIMIT': None,  # None or a tuple with the limits for the x-axis.
+    'Y_LIMIT': None,  # None or a tuple with the limits for the y-axis.
+    'X_INTERVAL': None,  # None or an integer with the interval for the x-axis.
+    'Y_INTERVAL': None,  # None or an integer with the interval for the y-axis.
+    
+    'ANIMATION_MODE': 'DURATION',  # 'DURATION' or 'SPEED' for exact time or speed between frames, 'AUTO' for a linear interpolation between the min and max values.
+    
+    'ANIMATION_FIXED_SPEED': 100,  # Time in milliseconds between each frame of the animation, ignored if mode is not 'SPEED'.
+    'ANIMATION_FIXED_DURATION': 12000,  # Time in milliseconds for the whole animation, ignored if mode is not 'DURATION'.
+    
     # Min and max values for the animation interpolation, ignored if mode is not 'AUTO'.
-    'ACTIVITY_ANIMATION_MIN_DURATION': 2000,
-    'ACTIVITY_ANIMATION_MAX_DURATION': 10000,
-    'ACTIVITY_ANIMATION_MIN_FRAMES': 10,
-    'ACTIVITY_ANIMATION_MAX_FRAMES': 200, 
+    'ANIMATION_MIN_DURATION': 1000,
+    'ANIMATION_MAX_DURATION': 12000,
+    'ANIMATION_MIN_FRAMES': 10,
+    'ANIMATION_MAX_FRAMES': 200, 
+}
 
+CATEGORY_PARAMS = {
+    'FIGURE_SIZE': (9.6, 5.4),
+    'GRAPH_COLOR': 'blue',
+    'GRAPH_BACKGROUND_COLOR': 'white',
+    'AXIS_COLOR': 'black',
+    'TEXT_COLOR': 'black',
+    'TITLE': '{name}\'s Top Mentioned {category_name}',  # Title of the category histogram. Vars: {name}, {category_name}, {id}
 
-    # Params for the category histograms
-    'CATEGORY_TITLE': '{name}\'s Top Mentioned {category_name} (ID: {id})',  # Title of the category histogram. All vars are optional.
-    'CATEGORY_X_LABEL': 'Categories',
-    'CATEGORY_Y_LABEL': 'Counts',
+    'X_LABEL': None,
+    'Y_LABEL': 'Mentions',
 
-    'CATEGORY_DYNAMIC_PARAMETERS': True,
-    'CATEGORY_X_LIMIT': None,
-    'CATEGORY_Y_LIMIT': None,
+    'DYNAMIC_PARAMETERS': True,  # Automatically detemine the limits.
+    'X_LIMIT': None,
+    'Y_LIMIT': None,
 
-    'CATEGORY_ANIMATION_MODE': 'AUTO',  # 'DURATION' or 'SPEED' or 'AUTO'
-    'CATEGORY_ANIMATION_FIXED_SPEED': 100,
-    'CATEGORY_ANIMATION_FIXED_DURATION': 4000,
+    'ANIMATION_MODE': 'DURATION',  # 'DURATION' or 'SPEED' or 'AUTO'
 
-    'CATEGORY_ANIMATION_MIN_DURATION': 2000,
-    'CATEGORY_ANIMATION_MAX_DURATION': 10000,
-    'CATEGORY_ANIMATION_MIN_FRAMES': 10,
-    'CATEGORY_ANIMATION_MAX_FRAMES': 200,
+    'ANIMATION_FIXED_SPEED': 100,
+    'ANIMATION_FIXED_DURATION': 6000,
 
-    'CATEGORY_BAR_ORDER': 'DESC',  # 'ASC' or 'DESC' or 'ALPHABETICAL'
-    'CATEGORY_COLORMAP': 'RdYlGn_r',  # Matplotlib colormap for the bars. (https://matplotlib.org/stable/tutorials/colors/colormaps.html)
+    'ANIMATION_MIN_DURATION': 1000,
+    'ANIMATION_MAX_DURATION': 8000,
+    'ANIMATION_MIN_FRAMES': 10,
+    'ANIMATION_MAX_FRAMES': 200,
 
-    'CATEGORY_GLOBAL_LIMIT': 10,  # Default limit of bars per category. 
+    'BAR_ORDER': 'ALPHABETICAL',  # 'ASC' or 'DESC' or 'ALPHABETICAL'
+    'COLORMAP': 'RdYlGn_r',  # Matplotlib colormap for the bars. (https://matplotlib.org/stable/tutorials/colors/colormaps.html)
+    'GLOBAL_LIMIT': 10,  # Default limit of bars per category. 
     'CATEGORIES': {  # Limit of bars per category. Set to -1 to use the CATEGORY_GLOBAL_LIMIT.
         'common phrases': 10,
         'countries': 5,
@@ -88,24 +92,25 @@ PARAMETERS = {
         'colors': 6,
         'famous people': 15
     },
+}
 
-    # Params for the radar chart
-    'METRICS_RADAR_TITLE': '{names[0]}\'s Metrics',  # Title of the radar chart. Can be None.
-    'METRICS_RADAR_FIGURE_SIZE': (9, 9),
-    'METRICS_RADAR_FRAME': 'polygon',  # Or 'circle'
-    'METRICS_RADAR_ANGLE': 2,  # Angle in degrees for the labels offset.
-    'METRICS_RADAR_BACKGROUND_COLOR': 'white',
-    'METRICS_RADAR_AXIS_COLOR': 'gray',
-    'METRICS_RADAR_TEXT_COLOR': 'black',
-    'METRICS_RADAR_COLORS': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'],  # For now, only the first color is used.
-    'METRICS_RADAR_SHOW_LEGEND': True,
-    'METRICS_RADAR_DYNAMIC_PARAMETERS': True,  # Set to True to automatically determine the ranges for data normalization. (highly recommended)
-    'METRICS_RADAR_METRICS': {
 
+METRICS_RADAR_PARAMS = {
+    'TITLE': '{names[0]} - Metrics',  # Title of the radar chart. Can be None.
+    'FIGURE_SIZE': (9, 9),
+    'FRAME': 'polygon',  # Or 'circle'
+    'ANGLE': 2,  # Angle in degrees for the labels offset.
+    'BACKGROUND_COLOR': 'white',
+    'AXIS_COLOR': 'gray',
+    'TEXT_COLOR': 'black',
+    'COLORS': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'],  # For now, only the first color is used.
+    'SHOW_LEGEND': True,
+    
+    'DYNAMIC_PARAMETERS': True,  # Set to True to automatically determine the ranges for data normalization. (highly recommended)
+    'METRICS': {
         # Metric names and their ranges for normalization.
         # The ranges are used to normalize the data between 0 and 1.
         # If dynamic parameters is set to True, these ranges will be ignored.
-
         'message_count': ('Message Count', (0, 10000)),
         'word_count': ('Word Count', (0, 5000)),
         'ratios.word_per_message': ('Words per Message', (0, 100)),  # access nested dict values with a dot.
