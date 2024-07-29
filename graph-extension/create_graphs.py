@@ -183,6 +183,8 @@ def create_activity_animation(
     show_first_message=True,
     show_top_active_days=3,
     show_ratios=True,
+    repeat=False,
+    repeat_delay=2000,
     animation_mode='AUTO',
     animation_fixed_speed=100,
     animation_fixed_duration=12000,
@@ -293,7 +295,7 @@ def create_activity_animation(
     else:
         raise ValueError(f"Invalid animation mode: {animation_mode}")
     
-    ani = animation.FuncAnimation(fig, update, frames=len(date_list), init_func=init, interval=interval, blit=True)
+    ani = animation.FuncAnimation(fig, update, frames=len(date_list), init_func=init, interval=interval, blit=True, repeat=repeat, repeat_delay=repeat_delay)
     
     if SHOW_PLOTS:
         plt.show()
@@ -323,6 +325,8 @@ def create_category_histograms_animation(
     y_label=None,
     title='{name} - {category_name}',
     colormap='viridis',
+    repeat=False,
+    repeat_delay=2000,
     animation_mode='AUTO',
     animation_fixed_speed=100,
     animation_fixed_duration=12000,
@@ -400,7 +404,7 @@ def create_category_histograms_animation(
         else:
             raise ValueError(f"Invalid animation mode: {animation_mode}")
 
-        ani = animation.FuncAnimation(fig, update, frames=max(counts) + 1, init_func=init, interval=interval)
+        ani = animation.FuncAnimation(fig, update, frames=max(counts) + 1, init_func=init, interval=interval, blit=True, repeat=repeat, repeat_delay=repeat_delay)
 
         if SHOW_PLOTS:
             plt.show()
@@ -632,6 +636,8 @@ def generate_data(user_stats):
                 show_first_message=ACTIVITY_PARAMS['SHOW_FIRST_MESSAGE'],
                 show_top_active_days=ACTIVITY_PARAMS['SHOW_TOP_ACTIVE_DAYS'],
                 show_ratios=ACTIVITY_PARAMS['SHOW_RATIOS'],
+                repeat=ACTIVITY_PARAMS['REPEAT'],
+                repeat_delay=ACTIVITY_PARAMS['REPEAT_DELAY'],
                 animation_mode=ACTIVITY_PARAMS['ANIMATION_MODE'],
                 animation_fixed_speed=ACTIVITY_PARAMS['ANIMATION_FIXED_SPEED'],
                 animation_fixed_duration=ACTIVITY_PARAMS['ANIMATION_FIXED_DURATION'],
@@ -660,6 +666,8 @@ def generate_data(user_stats):
                 y_label=CATEGORY_PARAMS['Y_LABEL'],
                 title=CATEGORY_PARAMS['TITLE'],
                 colormap=CATEGORY_PARAMS['COLORMAP'],
+                repeat=CATEGORY_PARAMS['REPEAT'],
+                repeat_delay=CATEGORY_PARAMS['REPEAT_DELAY'],
                 animation_mode=CATEGORY_PARAMS['ANIMATION_MODE'],
                 animation_fixed_speed=CATEGORY_PARAMS['ANIMATION_FIXED_SPEED'],
                 animation_fixed_duration=CATEGORY_PARAMS['ANIMATION_FIXED_DURATION'],

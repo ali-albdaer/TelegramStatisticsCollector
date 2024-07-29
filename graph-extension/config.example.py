@@ -44,7 +44,10 @@ ACTIVITY_PARAMS = {
     'Y_LIMIT': None,  # None or a tuple with the limits for the y-axis.
     'X_INTERVAL': None,  # None or an integer with the interval for the x-axis.
     'Y_INTERVAL': None,  # None or an integer with the interval for the y-axis.
-    
+
+    'REPEAT': False,  # Loop the animation.
+    'REPEAT_DELAY': 2000,  # Delay in milliseconds between each loop, ignored if REPEAT is False.
+
     'ANIMATION_MODE': 'DURATION',  # 'DURATION' or 'SPEED' for exact time or speed between frames, 'AUTO' for a linear interpolation between the min and max values.
     
     'ANIMATION_FIXED_SPEED': 100,  # Time in milliseconds between each frame of the animation, ignored if mode is not 'SPEED'.
@@ -71,6 +74,9 @@ CATEGORY_PARAMS = {
     'DYNAMIC_PARAMETERS': True,  # Automatically detemine the limits.
     'X_LIMIT': None,
     'Y_LIMIT': None,
+
+    'REPEAT': False,
+    'REPEAT_DELAY': 2000, 
 
     'ANIMATION_MODE': 'DURATION',  # 'DURATION' or 'SPEED' or 'AUTO'
 
