@@ -12,7 +12,8 @@ else:
     json_file  = "data/user_stats.json"
 
 # Choose what graphs to generate.
-GENERATE_ACTIVITY_CHART = True
+GENERATE_ACTIVITY_GIF = True
+GENERATE_ACTIVITY_PNG = True
 GENERATE_CATEGORY_HISTOGRAM_GIFS = True
 GENERATE_CATEGORY_HISTOGRAM_PNGS = True
 GENERATE_METRICS_RADAR = True

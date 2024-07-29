@@ -306,6 +306,115 @@ def create_activity_animation(
         plt.close(fig)
 
 
+def create_activity_static(
+    user_id, 
+    user_data, 
+    static_graphs_folder,
+    *,
+    activity_factor=None, 
+    figure_size=(9.6, 5.4),
+    graph_color='blue',
+    graph_background_color='white',
+    axis_color='black',
+    text_color='black',
+    dynamic_parameters=True,
+    x_limit=None,
+    y_limit=None,
+    x_interval=None,
+    y_interval=None,
+    x_label=None,
+    y_label='Amount of Messages Sent',
+    title='{name} - Activity Over Time',
+    show_dates=True,
+    axis_date_format='%Y-%m',
+    show_first_message=True,
+    show_top_active_days=3,
+    show_ratios=True
+):
+    # Getting the activity data
+    activity_data = user_data['top_active_days']
+    activity_factor = activity_factor or 1
+    start_date = min(activity_data.keys())
+    start_date_dt = datetime.strptime(start_date, '%Y-%m-%d')
+    end_date_dt = datetime.strptime(max(activity_data.keys()), '%Y-%m-%d')
+    
+    # Daily message counts
+    current_date = start_date_dt
+    date_list = []
+    message_counts = []
+    while current_date <= end_date_dt:
+        date_str = current_date.strftime('%Y-%m-%d')
+        date_list.append((current_date - start_date_dt).days)
+        message_counts.append(activity_data.get(date_str, 0))
+        current_date += timedelta(days=1)
+    
+    # Figure and axes
+    fig, ax = plt.subplots(figsize=figure_size)
+    fig.patch.set_facecolor(graph_background_color)
+
+    ax.set_facecolor(graph_background_color)
+    ax.spines['bottom'].set_color(axis_color)
+    ax.spines['left'].set_color(axis_color)
+    ax.tick_params(axis='x', colors=axis_color)
+    ax.tick_params(axis='y', colors=axis_color)
+    ax.yaxis.label.set_color(text_color)
+    ax.xaxis.label.set_color(text_color)
+    ax.title.set_color(text_color)
+    
+    # Set the limits and labels
+    if dynamic_parameters:
+        ax.set_xlim(0, len(date_list))
+        ax.set_ylim(0, int(max(message_counts) * 1.05))
+        ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
+        ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+
+    else:
+        ax.set_xlim(x_limit)
+
+        if y_limit:
+            ax.set_ylim(y_limit)
+        
+        if x_interval:
+            ax.xaxis.set_major_locator(plt.MultipleLocator(x_interval))
+        
+        if y_interval:
+            ax.yaxis.set_major_locator(plt.MultipleLocator(y_interval))
+        
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_title(title.format(name=user_data['name'], id=user_id))
+
+    if show_dates:
+        ax.set_xticks(range(0, len(date_list), x_interval or max(1, len(date_list) // 10)))
+        ax.set_xticklabels([(start_date_dt + timedelta(days=i)).strftime(axis_date_format) for i in range(0, len(date_list), x_interval or max(1, len(date_list) // 10))], rotation=45)
+
+    else:
+        ax.xaxis.set_major_locator(plt.MultipleLocator(x_interval or max(1, len(date_list) // 10)))
+                                   
+    line, = ax.plot(date_list, message_counts, marker='o', color=graph_color)
+
+    Y = 0.90
+    if show_first_message:
+        plt.figtext(0.88, (Y:=Y-0.05), f"First Message: {start_date_dt.strftime('%Y-%m-%d')}", ha='right', va='top', fontsize=10, color=text_color)
+
+    if (N:=show_top_active_days):
+        most_active_days = sorted(activity_data, key=activity_data.get, reverse=True)[:min(N, len(activity_data))]
+        for i, day in enumerate(most_active_days, 1):
+            plt.figtext(0.88, (Y:=Y-0.05), f"#{i}: {day} ({activity_data[day]} messages)", ha='right', va='top', fontsize=10, color=text_color)
+
+    if show_ratios and activity_factor != -1:
+        plt.figtext(0.88, (Y:=Y-0.05), f"Activeness: {(user_data['ratios']['messages_per_day'] * 150 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=text_color)
+        plt.figtext(0.88, (Y:=Y-0.05), f"Touch-Grass Rate: {100 - (user_data['ratios']['messages_per_day'] * 100 / activity_factor):.2f}%", ha='right', va='top', fontsize=10, color=text_color)
+
+    if SHOW_PLOTS:
+        plt.show()
+
+    if SAVE_PLOTS:
+        png_path = os.path.join(static_graphs_folder, "activity_time.png")
+        fig.savefig(png_path)
+        plt.close(fig)
+
+
 def create_category_histograms_animation(
     user_id, 
     user_data, 
@@ -574,7 +683,7 @@ def generate_data(user_stats):
         user_ids = [user_id for user_id in user_stats.keys() if user_id in GENERATE_FROM_LIST]
 
     # Calculate some global parameters
-    if GENERATE_ACTIVITY_CHART:
+    if GENERATE_ACTIVITY_PNG or GENERATE_ACTIVITY_GIF:
         max_activeness = max(user_stats[user_id]['ratios'].get('messages_per_day', -1) for user_id in user_ids) if ACTIVITY_PARAMS['SHOW_RATIOS'] else -1
 
     if GENERATE_METRICS_RADAR:
@@ -612,7 +721,7 @@ def generate_data(user_stats):
         if SAVE_PLOTS and not os.path.exists(static_graphs_folder):
             os.makedirs(static_graphs_folder)
         
-        if GENERATE_ACTIVITY_CHART:
+        if GENERATE_ACTIVITY_GIF:
             create_activity_animation(
                 user_id, 
                 user_data, 
@@ -646,6 +755,33 @@ def generate_data(user_stats):
                 animation_min_frames=ACTIVITY_PARAMS['ANIMATION_MIN_FRAMES'],
                 animation_max_frames=ACTIVITY_PARAMS['ANIMATION_MAX_FRAMES']
             )
+
+        if GENERATE_ACTIVITY_PNG:
+            create_activity_static(
+                user_id, 
+                user_data, 
+                static_graphs_folder, 
+                activity_factor=max_activeness,
+                figure_size=ACTIVITY_PARAMS['FIGURE_SIZE'],
+                graph_color=ACTIVITY_PARAMS['GRAPH_COLOR'],
+                graph_background_color=ACTIVITY_PARAMS['GRAPH_BACKGROUND_COLOR'],
+                axis_color=ACTIVITY_PARAMS['AXIS_COLOR'],
+                text_color=ACTIVITY_PARAMS['TEXT_COLOR'],
+                dynamic_parameters=ACTIVITY_PARAMS['DYNAMIC_PARAMETERS'],
+                x_limit=ACTIVITY_PARAMS['X_LIMIT'],
+                y_limit=ACTIVITY_PARAMS['Y_LIMIT'],
+                x_interval=ACTIVITY_PARAMS['X_INTERVAL'],
+                y_interval=ACTIVITY_PARAMS['Y_INTERVAL'],
+                x_label=ACTIVITY_PARAMS['X_LABEL'],
+                y_label=ACTIVITY_PARAMS['Y_LABEL'],
+                title=ACTIVITY_PARAMS['TITLE'],
+                show_dates=ACTIVITY_PARAMS['SHOW_DATES'],
+                axis_date_format=ACTIVITY_PARAMS['AXIS_DATE_FORMAT'],
+                show_first_message=ACTIVITY_PARAMS['SHOW_FIRST_MESSAGE'],
+                show_top_active_days=ACTIVITY_PARAMS['SHOW_TOP_ACTIVE_DAYS'],
+                show_ratios=ACTIVITY_PARAMS['SHOW_RATIOS']
+            )
+        
         
         if GENERATE_CATEGORY_HISTOGRAM_GIFS:
             create_category_histograms_animation(
