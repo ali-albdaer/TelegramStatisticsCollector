@@ -513,7 +513,7 @@ def create_category_histograms_animation(
         else:
             raise ValueError(f"Invalid animation mode: {animation_mode}")
 
-        ani = animation.FuncAnimation(fig, update, frames=max(counts) + 1, init_func=init, interval=interval, blit=True, repeat=repeat, repeat_delay=repeat_delay)
+        ani = animation.FuncAnimation(fig, update, frames=max(counts) + 1, init_func=init, interval=interval, repeat=repeat, repeat_delay=repeat_delay)
 
         if SHOW_PLOTS:
             plt.show()
