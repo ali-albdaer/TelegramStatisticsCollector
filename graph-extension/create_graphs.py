@@ -876,4 +876,9 @@ if __name__ == '__main__':
     if id:
         stats = {str(id): stats}
 
-    generate_data(stats)
+    try:
+        generate_data(stats)
+
+    except KeyboardInterrupt:
+        print("[ Program Interrupted. ]")
+        exit(0)
