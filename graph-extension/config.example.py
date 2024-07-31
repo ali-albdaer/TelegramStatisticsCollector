@@ -1,7 +1,7 @@
 development = False
 
-SHOW_PLOTS = False
-SAVE_PLOTS = True
+SHOW_PLOTS = False  # Show the plots in a window.
+SAVE_PLOTS = True  # Save the plots to the output folder.
 
 if development:
     output_folder = "graphs_dev"
